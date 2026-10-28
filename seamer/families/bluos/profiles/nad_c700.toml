@@ -1,0 +1,18 @@
+description = "NAD C 700 (BluOS 4.18): streamer-amplifier, slow stream connect."
+extends = ["_base"]
+
+[identity]
+manufacturer = "NAD"
+brand = "NAD"
+name = "Den C700"
+model = "C700"
+modelName = "C 700"
+icon = "/images/players/C700_nt.png"
+mac = "00:00:5E:00:53:04"
+firmware = "4.18.18"
+
+[knobs]
+fw_profile = "4.18"
+device_class = "streamer-amplifier"
+volume_db_range = { lo = -70.1, hi = -20.1 }  # bl2:B40
+connect_delay_s = { min = 2.0, max = 4.0 }    # bl2:B44, ma#3488 (medium)

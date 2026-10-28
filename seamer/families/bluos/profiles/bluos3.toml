@@ -1,0 +1,17 @@
+description = "Older player on BluOS 3 (low-medium confidence: no public capture)."
+extends = ["_base"]
+
+[identity]
+name = "Office Node 2"
+model = "N125"
+modelName = "NODE 2"
+icon = "/images/players/N125_nt.png"
+mac = "00:00:5E:00:53:05"
+firmware = "3.20.45"
+
+[knobs]
+fw_profile = "bluos3"         # bl2:B51 (low)
+device_class = "streamer"
+extra_status_fields = false   # bl2:B39: canMovePlayback is 4.x
+quality_mode = "bps"          # bl2:B35 (medium)
+group_name_style = "names"    # bl2:B30 (low)

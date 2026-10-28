@@ -1,0 +1,14 @@
+description = "Bluesound POWERNODE (N330), BluOS 4.16: streamer-amplifier."
+extends = ["_base"]
+
+[identity]
+name = "Kitchen Powernode"
+model = "N330"
+modelName = "POWERNODE"
+icon = "/images/players/N330_nt.png"
+mac = "00:00:5E:00:53:02"
+firmware = "4.16.6"
+
+[knobs]
+fw_profile = "4.16"
+device_class = "streamer-amplifier"
