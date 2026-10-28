@@ -1,0 +1,23 @@
+description = "sendspin python-cli daemon on a Raspberry Pi Zero 2 W: G2, PCM/FLAC, slow decode, 2 ms dead-band corrector, Ctrl-C sends shutdown."
+extends = ["_base"]
+
+[identity]
+name = "Bedroom Pi"
+manufacturer = "Raspberry Pi"
+product_name = "Pi Zero 2 W"
+software_version = "sendspin 8.1.0"
+
+[knobs]
+wire_gen = "G2"
+roles = "player,controller,metadata"
+formats = "flac:48000:16:2,pcm:48000:16:2,pcm:44100:16:2"
+buffer_capacity = 1000000
+required_lead_time_ms = 250           # aiosendspin defaults
+min_buffer_ms = 250
+corrector = "python_cli"              # SS19
+decode_rt_factor = 0.15               # SS47
+start_gate_ms = 200                   # SS23
+goodbye_reason = "shutdown"           # SS27: Ctrl-C / systemd stop (#6888)
+mac_address = "aa:bb:cc:00:00:05"
+clock_skew_ppm = 40
+clock_jitter_us = 300

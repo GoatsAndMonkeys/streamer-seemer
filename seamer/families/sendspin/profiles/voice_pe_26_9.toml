@@ -1,0 +1,22 @@
+description = "Home Assistant Voice PE, shipped firmware 26.9.x: G0 wire, plain ESP32-S3 with 8 MB PSRAM, FLAC/PCM only."
+extends = ["_base"]
+
+[identity]
+name = "Home Assistant Voice"
+manufacturer = "Nabu Casa"
+product_name = "Home Assistant Voice PE"
+software_version = "26.9.1"
+
+[knobs]
+wire_gen = "G0"
+client_id_mode = "mac"
+mac_address = "aa:bb:cc:00:00:03"
+roles = "player"
+formats = "flac:48000:16:2,pcm:48000:16:2"
+buffer_capacity = 800000
+required_lead_time_ms = 150
+min_buffer_ms = 500
+initial_volume = 60
+state_echo = "delayed"
+state_echo_delay_ms = 30
+mdns_on_goodbye = "withdraw"
