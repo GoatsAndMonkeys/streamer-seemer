@@ -1,0 +1,21 @@
+description = "squeezelite-esp32: 16-bit I2S DAC, small buffers, no HTTPS, deviceid 100."
+extends = ["_base"]
+
+[identity]
+manufacturer = "sle118"
+name = "Seamer ESP32"
+mac = "02:00:00:5c:00:03"
+model = "squeezeesp32"
+model_name = "SqueezeESP32"
+device_id = "squeezeesp32"
+firmware = "v2.0.0-esp32"
+max_sample_rate = 48000
+caps = ["AccuratePlayPoints=1", "HasDigitalOut=1"]
+codecs = ["alc", "aac", "ogg", "ops", "flc", "pcm", "mp3"]
+
+[knobs]
+can_https = false
+max_pcm_bits = 16
+stream_buffer_kb = 256
+buffer_capacity_s = 4.0
+server_silence_timeout_s = 35.0

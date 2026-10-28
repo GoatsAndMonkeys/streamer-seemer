@@ -1,0 +1,21 @@
+description = "Logitech Squeezebox Radio (SqueezePlay 7.x firmware): no HTTPS, 48 kHz, bare SETD name."
+extends = ["_base"]
+
+[identity]
+manufacturer = "Logitech"
+name = "Seamer Radio"
+mac = "02:00:00:5c:00:04"
+model = "baby"
+model_name = "Squeezebox Radio"
+device_id = "squeezeplay"
+firmware = "7.7.3-r16676"
+max_sample_rate = 48000
+caps = ["AccuratePlayPoints=1", "HasDigitalOut=0", "Balance=1"]
+codecs = ["alc", "aac", "ogg", "flc", "aif", "pcm", "mp3"]
+
+[knobs]
+can_https = false
+max_pcm_bits = 24
+setd_name_nul = false            # S12
+helo_delay_s = 0.5
+stream_buffer_kb = 1536

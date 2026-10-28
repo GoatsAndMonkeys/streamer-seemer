@@ -1,0 +1,11 @@
+description = "piCorePlayer squeezelite with -V: volume goes to the ALSA hardware mixer."
+extends = ["_base"]
+
+[identity]
+name = "Seamer piCorePlayer"
+mac = "02:00:00:5c:00:02"
+firmware = "v2.0.0-1488-pCP"
+max_sample_rate = 384000
+
+[knobs]
+hardware_volume = true

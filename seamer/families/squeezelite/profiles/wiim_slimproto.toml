@@ -1,0 +1,17 @@
+description = "WiiM's built-in slimproto client (low confidence): starts before strm u, odd heartbeats."
+extends = ["_base"]
+
+[identity]
+manufacturer = "Linkplay"
+name = "Seamer WiiM Squeeze"
+mac = "02:00:00:5c:00:05"
+model = "WiiM_Pro_with_squeezelite"
+model_name = "WiiM Pro"
+firmware = "4.8.6"
+max_sample_rate = 192000
+caps = ["AccuratePlayPoints=0", "HasDigitalOut=1"]
+codecs = ["flc", "pcm", "mp3", "aac"]
+
+[knobs]
+heartbeat_while_paused_advances = true    # S16
+early_start_before_unpause_at = true      # S16

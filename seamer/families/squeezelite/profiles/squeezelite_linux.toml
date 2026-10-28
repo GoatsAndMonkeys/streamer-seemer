@@ -1,0 +1,6 @@
+description = "squeezelite 2.0 on Linux (ALSA, software volume)."
+extends = ["_base"]
+
+[identity]
+name = "Seamer Squeezelite"
+mac = "02:00:00:5c:00:01"

@@ -1,0 +1,18 @@
+# Shared base for squeezelite profiles. Files starting with "_" are not listed.
+# MACs are locally administered (02:...) fakes.
+[identity]
+manufacturer = "Ralph Irving"
+model = "squeezelite"
+model_name = "SqueezeLite"
+device_id = "squeezeplay"   # squeezelite reports deviceid 12
+revision = 0
+firmware = "v2.0.0-1488"
+max_sample_rate = 192000
+caps = ["AccuratePlayPoints=1", "HasDigitalOut=1", "HasPolarityInversion=1", "Balance=1"]
+codecs = ["dsf", "dff", "alc", "aac", "ogg", "ops", "ogf", "flc", "aif", "pcm", "mp3"]
+
+[surfaces]
+list = ["slimproto_tcp", "slimproto_udp_discovery"]
+
+[knobs]
+prebuffer_s = 0.3
