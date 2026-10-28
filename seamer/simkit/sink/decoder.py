@@ -173,6 +173,11 @@ class FfmpegDecoder(Decoder):
             "error",
             "-probesize",
             "32768",
+            # single-threaded decode and per-packet flushes keep the audio ffmpeg holds
+            # back small: frame threading kept ~2 s of a paced FLAC stream until EOF,
+            # which a drop-on-close sink then counted as dropped
+            "-threads",
+            "1",
             "-i",
             "pipe:0",
             "-f",
@@ -181,6 +186,8 @@ class FfmpegDecoder(Decoder):
             str(self.rate),
             "-ac",
             str(self.channels),
+            "-flush_packets",
+            "1",
             "pipe:1",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
