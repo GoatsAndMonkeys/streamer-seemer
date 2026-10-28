@@ -25,7 +25,7 @@ test = [
 dev = [
   "streamer-seamer[test]",
   "streamer-seamer[sendspin]",
-  "ruff>=0.6",
+  "ruff==0.17.3",
 ]
 
 [project.scripts]
