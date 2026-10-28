@@ -15,12 +15,16 @@ dependencies = [
 
 [project.optional-dependencies]
 mdns = ["zeroconf>=0.130"]
+# Sendspin family: the real aiosendspin client (and its server, used as the in-process
+# controller in tests). The [server] extra pulls in PyAV/numpy for encoding.
+sendspin = ["aiosendspin[server]>=10.2.1", "zeroconf>=0.130"]
 test = [
   "pytest>=8",
   "pytest-asyncio>=0.23",
 ]
 dev = [
   "streamer-seamer[test]",
+  "streamer-seamer[sendspin]",
   "ruff>=0.6",
 ]
 
