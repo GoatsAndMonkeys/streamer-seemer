@@ -12,7 +12,7 @@ Ports
 
 Sim actions (``POST /_sim/action/<name>``)
 ------------------------------------------
-- ``switch_source {source}``: hdmi, line-in, optical, bluetooth, phono, aux (physical,
+- ``switch_source {source, title?, art?}``: hdmi, line-in, optical, bluetooth, phono, aux (physical,
   via the CEC-style STOPPED gap) or airplay, spotify, cast, qobuz, tidal, app (streaming).
 - ``app_takeover {title?}``: the WiiM app starts its own queue (lq:Q21).
 - ``reboot``: restart the boot clock (``boot_status_none_s``).
@@ -172,7 +172,16 @@ class LinkPlayDevice(SimDevice):
     def _api_app(self) -> web.Application:
         app = self.make_app()
         app.router.add_get("/httpapi.asp", self.http.handle)
+        app.router.add_get(proto.AIRPLAY_ART_PATH, self._airplay_art)
         return app
+
+    async def _airplay_art(self, _req: web.Request) -> web.StreamResponse:
+        """The AirPlay cover the device hosts itself: JPEG bytes, no Content-Type (L58)."""
+        if not (self.knobs.get("self_hosted_art") and self.transport.owner == "airplay"):
+            raise web.HTTPNotFound()
+        resp = web.Response(body=proto.TINY_JPEG)
+        resp.content_type = ""  # sent empty; aiohttp would default to octet-stream
+        return resp
 
     async def on_start(self) -> None:
         scheme = self.knobs.get("http_scheme")
@@ -298,7 +307,7 @@ class LinkPlayDevice(SimDevice):
             return "", ""
         if slot.owner != "ma" and not slot.uri.startswith("http"):
             uri = "wiimu_airplay" if slot.owner == "airplay" else slot.uri
-            return uri, proto.didl(uri, slot.title)
+            return uri, proto.didl(uri, slot.title, art=self.artwork_for(slot))
         title, artist, album = proto.didl_title(slot.meta)
         return slot.uri, proto.didl(
             slot.uri,
@@ -306,8 +315,28 @@ class LinkPlayDevice(SimDevice):
             artist,
             album,
             slot.duration_s,
-            art=slot.extra.get("art") or self.knobs.get("artwork_sentinel"),
+            art=self.artwork_for(slot),
         )
+
+    def artwork_for(self, slot: MediaSlot) -> str:
+        """albumArtURI the device reports for a slot (DIDL and getMetaInfo).
+
+        MA's own stream: the art MA sent in its DIDL, echoed back. AirPlay with
+        ``self_hosted_art``: the device's own HTTPS copy (L58). Otherwise the slot's art
+        (a sim action can set it) or the ``artwork_sentinel`` (lq:Q13, L80).
+        """
+        if slot.extra.get("art"):
+            return str(slot.extra["art"])
+        if slot.owner == "airplay" and self.knobs.get("self_hosted_art"):
+            base = self.api_urls.get("https")
+            if base:
+                self.rec.knob("fired", knob="self_hosted_art", quirks=["L58", "L61"])
+                return f"{base}{proto.AIRPLAY_ART_PATH}"
+        if slot.owner == "ma":
+            art = proto.didl_art(slot.meta)
+            if art:
+                return art
+        return str(self.knobs.get("artwork_sentinel"))
 
     def _actions(self, state: TState) -> str:
         if state == TState.PLAYING:
@@ -982,6 +1011,9 @@ class LinkPlayDevice(SimDevice):
     async def sim_action(self, name: str, payload: dict[str, Any]) -> Any:
         if name == "switch_source":
             await self.switch_source(str(payload.get("source", "")), payload.get("title"))
+            if payload.get("art") and self.transport.current is not None:
+                self.transport.current.extra["art"] = str(payload["art"])
+                self.avt_changed()
             return self.source
         if name == "app_takeover":
             return await self.app_takeover(payload.get("title"))

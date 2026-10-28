@@ -131,6 +131,17 @@ knob(
     doc="albumArtURI reported when there is no artwork.",
 )
 knob(
+    "self_hosted_art",
+    family=FAMILY,
+    type="bool",
+    default=False,
+    quirks=("L58", "L61"),
+    confidence="medium",
+    doc="While AirPlay plays, albumArtURI points at the device's own self-signed HTTPS "
+    "listener (/data/AirplayArtWorkData.jpeg), served with no Content-Type. Seen via "
+    "getMetaInfo (HA#187893); the DIDL carrying it too is inferred from HA core#179523.",
+)
+knob(
     "duplicate_vendor_key",
     family=FAMILY,
     type="bool",

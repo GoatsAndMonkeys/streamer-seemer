@@ -96,7 +96,7 @@ class HttpApi:
             return reply(dev.knobs.get("failure_word"))
         title, artist, album = proto.didl_title(slot.meta)
         sp = " " if style == "trailing_space" else ""
-        art = slot.extra.get("art") or dev.knobs.get("artwork_sentinel")
+        art = dev.artwork_for(slot)
         return jreply(
             {
                 "metaData": {
