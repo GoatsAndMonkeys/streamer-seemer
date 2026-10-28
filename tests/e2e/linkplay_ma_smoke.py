@@ -104,6 +104,7 @@ if "pytest" in sys.modules:
             "MA's elapsed time jumped to the previous stream's position after a seek (#6867)",
             r,
         )
+        assert r["worst_settled_error_s"] < 2, ("MA's elapsed time does not follow the device", r)
 
     def test_bug_6897_tv_input_releases_the_queue():
         r = _run_scenario("bug6897")
@@ -347,11 +348,24 @@ async def _bug6867(mass, dev, pid, until, log, result) -> None:
         while time.time() - t_seek < 3:
             worst = max(worst, queue.corrected_elapsed_time - (target + time.time() - t_seek))
             await asyncio.sleep(0.02)
-        rows.append({"played_before": played, "target": target, "max_ahead_s": round(worst, 1)})
-        log(f"seek {rows[-1]}")
         await until(lambda: dev.transport.state.value == "playing", 15)
+        # a fix that freezes or zeroes the clock must not pass: once the device plays,
+        # MA's elapsed time has to follow it. MA seeks by restarting the stream at the
+        # target, so the device's position counts from there.
+        await asyncio.sleep(3)
+        settled = queue.corrected_elapsed_time - (target + dev.transport.truth_position())
+        rows.append(
+            {
+                "played_before": played,
+                "target": target,
+                "max_ahead_s": round(worst, 1),
+                "settled_error_s": round(settled, 1),
+            }
+        )
+        log(f"seek {rows[-1]}")
     result["seeks"] = rows
     result["worst_ahead_s"] = max(r["max_ahead_s"] for r in rows)
+    result["worst_settled_error_s"] = max(abs(r["settled_error_s"]) for r in rows)
     result["stale_served"] = sum(1 for _ in _fired(dev, "stale_prev_position")) > stale_before
 
 

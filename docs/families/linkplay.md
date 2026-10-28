@@ -151,7 +151,7 @@ Result on MA `dev` (2026-10-28):
 
 | Bug | Knobs | Result on dev |
 |---|---|---|
-| MA#6867 elapsed time jumps ahead after a seek | `wiim_pro` + `stale_prev_position={p=1, window_s=0.6}`, `play_start_delay_s=0.8` | **Reproduces (test fails).** After seeking from 8/12/6 s to 120/200/90 s, MA's elapsed ran 7.2/12.2/6.2 s ahead: during TRANSITIONING the device still reports the old track position, and `_sync_position` accepts it because the URI already matches |
+| MA#6867 elapsed time jumps ahead after a seek | `wiim_pro` + `stale_prev_position={p=1, window_s=0.6}`, `play_start_delay_s=0.8` | **Reproduces (test fails).** Three seeks (to 120/200/90 s) put MA's elapsed 7.2/15.2/9.2 s ahead: during TRANSITIONING the device still reports the old track position, and `_sync_position` accepts it because the URI already matches |
 | MA#6897 TV/HDMI input does not release the MA queue | `wiim_amp` + `input_switch_without_upnp_event=true` | **Reproduces (test fails).** Device is in mode 49 (HDMI) with owner `hdmi`; 20 s later MA still shows `active_source` = its queue, `playing`, old title |
 | L64 HTTP volume change not evented | `wiim_amp` (`echo_http_volume_events=false`) | Not reproducible against MA: MA caches the level it set, so the missing event is invisible |
 | lq:Q46 join needs a restart of the leader's stream | `role_propagation_delay_s` | Worked around on dev (`JOIN_RESTART_TIMEOUT`); not a failing test |
@@ -159,3 +159,10 @@ Result on MA `dev` (2026-10-28):
 The two bug tests (`test_bug_6867_no_jump_ahead_after_seek`,
 `test_bug_6897_tv_input_releases_the_queue`) assert the correct behaviour, so they fail on
 current dev and should pass once fixed.
+
+Fix branches (2026-10-28, 3 runs each, all deterministic): `fix-wiim-seek-position` passes
+#6867 (0.0 s ahead, MA settles on the device's position within 0.1 s); dev fails 3/3.
+`fix-wiim-external-input` passes #6897 (`active_source` becomes `hdmi`); dev fails 3/3.
+That branch still shows the last MA track title under the HDMI source: the WiiM SDK only
+replaces its track info from a UPnP event or populated polled metadata, and the switch
+sends neither (`input_switch_without_upnp_event`).
