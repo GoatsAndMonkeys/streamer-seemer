@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "streamer-seamer"
+version = "0.1.0"
+description = "Streamer Seamer: simulated streaming devices for testing Music Assistant"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = [
+  "aiohttp>=3.9",
+]
+
+[project.optional-dependencies]
+mdns = ["zeroconf>=0.130"]
+test = [
+  "pytest>=8",
+  "pytest-asyncio>=0.23",
+]
+dev = [
+  "streamer-seamer[test]",
+  "ruff>=0.6",
+]
+
+[project.scripts]
+seamer = "seamer.cli:main"
+
+[project.entry-points.pytest11]
+seamer = "seamer.simkit.pytest_plugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["seamer"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning:aiohttp.*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "ASYNC", "PT", "C4"]
+# B027: optional no-op hooks on ABCs are deliberate
+ignore = ["RUF012", "B027", "ASYNC109", "ASYNC110", "SIM105"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PT011"]
