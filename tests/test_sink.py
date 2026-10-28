@@ -175,3 +175,38 @@ async def test_client_close_records_summary(media, media_srv):
     assert heard.data["reason"] == "stop"
     assert heard.data["unplayed_s"] > 0
     await sink.aclose()
+
+
+async def test_body_short_of_content_length_is_a_server_close(media):
+    """A forced, oversized Content-Length cut short is a server close, not an error."""
+    from aiohttp import web
+
+    from seamer.simkit.kits.http import HttpServer
+
+    t = media.track(3, 2.0)
+    data = t.path.read_bytes()
+
+    async def forced_length(request: web.Request) -> web.StreamResponse:
+        resp = web.StreamResponse(headers={"Content-Type": "audio/wav"})
+        resp.content_length = len(data) * 10
+        await resp.prepare(request)
+        await resp.write(data)
+        request.transport.close()  # type: ignore[union-attr]
+        return resp
+
+    app = web.Application()
+    app.router.add_get("/forced.wav", forced_length)
+    srv = HttpServer(app)
+    await srv.start()
+    clock = VirtualClock()
+    sink, rec = make_sink(clock, on_server_close="drop", read_mode="burst", prebuffer_s=0.5)
+    try:
+        await sink.open(f"{srv.base_url}/forced.wav")
+        await wait_real(lambda: rec.timeline().first(name="eof") is not None)
+        assert rec.timeline().first(name="eof").data["truncated"] is True
+        await clock.run_until(lambda: not sink.active, max_s=10, step=0.05)
+        assert rec.timeline().first(name="error") is None
+        assert rec.timeline().last(name="heard").data["reason"] == "dropped"
+    finally:
+        await sink.aclose()
+        await srv.stop()

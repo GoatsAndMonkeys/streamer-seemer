@@ -1,0 +1,14 @@
+description = "Bluesound NODE (N130), BluOS 4.16: the reference streamer."
+extends = ["_base"]
+
+[identity]
+name = "Living Room Node"
+model = "N130"
+modelName = "NODE"
+icon = "/images/players/N130_nt.png"
+mac = "00:00:5E:00:53:01"
+firmware = "4.16.22"
+
+[knobs]
+fw_profile = "4.16"
+device_class = "streamer"

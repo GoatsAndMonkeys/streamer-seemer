@@ -1,0 +1,15 @@
+description = "Bluesound PULSE FLEX 2i (P125): battery speaker, narrow dB range."
+extends = ["_base"]
+
+[identity]
+name = "Patio Flex"
+model = "P125"
+modelName = "PULSE FLEX 2i"
+icon = "/images/players/P125_nt.png"
+mac = "00:00:5E:00:53:03"
+firmware = "4.16.22"
+
+[knobs]
+fw_profile = "4.16"
+device_class = "speaker"
+volume_db_range = { lo = -49.5, hi = 0.5 }   # bl2:B40 (low)

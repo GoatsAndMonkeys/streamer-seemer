@@ -1,0 +1,17 @@
+# Shared base for BluOS profiles. Files starting with "_" are not listed.
+[identity]
+manufacturer = "Lenbrook"
+brand = "Bluesound"
+firmware = "4.16.22"
+volume = "30"
+
+[surfaces]
+list = ["bluos_http"]
+
+[knobs]
+# The player buffers far ahead of playback and plays its buffer out after the
+# server closes (bss:B4/B5); MA's dev cut-off (#6872) needs both.
+buffer_capacity_s = 120
+read_mode = "realtime"
+on_server_close = "drop"
+prebuffer_s = 1.0
