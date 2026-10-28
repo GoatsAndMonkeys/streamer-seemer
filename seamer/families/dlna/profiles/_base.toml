@@ -1,0 +1,15 @@
+# Shared base for DLNA renderer profiles. Files starting with "_" are not listed.
+# Addresses are RFC 5737 documentation addresses; MACs are locally administered fakes.
+[identity]
+manufacturer_url = "http://example.com/"
+model_description = "Media Renderer"
+ip = "192.0.2.20"
+mac = "02:00:5E:00:00:20"
+volume = "20"
+
+[surfaces]
+list = ["upnp_avt", "upnp_rc", "upnp_cm", "gena", "ssdp"]
+
+[knobs]
+load_delay_s = 0.2          # TRANSITIONING before the stream is requested
+prebuffer_s = 0.5

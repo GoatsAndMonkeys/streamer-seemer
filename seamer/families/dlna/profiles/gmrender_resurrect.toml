@@ -1,0 +1,20 @@
+description = "gmrender-resurrect (GStreamer, Raspberry Pi): the common hobby renderer."
+extends = ["_base"]
+
+[identity]
+name = "gmrender-resurrect"
+manufacturer = "Ivo Clarysse, Henner Zeller"
+manufacturer_url = "http://github.com/hzeller/gmrender-resurrect"
+model = "gmediarender"
+model_number = "0.1"
+model_description = "UPnP Media Renderer"
+serial = "1"
+ip = "192.0.2.21"
+mac = "02:00:5E:00:00:21"
+
+[knobs]
+seek_units = "rel_time_silent"        # dsh:13: advertises ABS_TIME, ignores it
+seek_when_paused = "resume_silently"  # dsh:14, gmrender #83
+seek_emits_event = false              # dsh:14, gmrender #252
+abs_time_not_implemented = true       # dsh:16
+set_next = "ok"                       # gapless via SetNext works
