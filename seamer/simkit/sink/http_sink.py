@@ -321,7 +321,6 @@ class HttpSink:
             await self._probe(session, url, k.get("probe"))
         headers = {"Range": "bytes=0-"} if k.get("require_range") else {}
         byte_cap = k.get("byte_cap")
-        time_cap = k.get("time_cap_s")
         realtime = k.get("read_mode") == "realtime"
         async with session.get(url, headers=headers) as resp:
             chunked = "chunked" in resp.headers.get("Transfer-Encoding", "").lower()
@@ -358,6 +357,7 @@ class HttpSink:
                         data = data[: byte_cap - self.bytes_read]
                     self.bytes_read += len(data)
                     await decoder.feed(data)
+                    time_cap = k.get("time_cap_s")  # re-read: set_live may cap mid-stream
                     if (byte_cap and self.bytes_read >= byte_cap) or (
                         time_cap and self.buffer.received_s >= time_cap
                     ):
