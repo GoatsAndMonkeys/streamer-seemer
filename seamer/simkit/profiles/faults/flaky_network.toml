@@ -1,0 +1,5 @@
+description = "Occasional HTTP 500s and hung requests."
+[knobs]
+http_error = { p = 0.05 }
+hang = { p = 0.02, hold_s = 30.0 }
+jitter_s = 0.3

@@ -1,0 +1,3 @@
+description = "Discards buffered audio when the server closes the stream (BluOS-style)."
+[knobs]
+on_server_close = "drop"

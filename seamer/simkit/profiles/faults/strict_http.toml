@@ -1,0 +1,5 @@
+description = "Picky HTTP client: HEAD probe first, needs Range support, rejects chunked bodies."
+[knobs]
+probe = "head"
+require_range = true
+reject_chunked = true

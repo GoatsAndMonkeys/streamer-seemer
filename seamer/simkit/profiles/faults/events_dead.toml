@@ -1,0 +1,3 @@
+description = "Device never pushes state events (GENA/ws/long-poll wakes); clients must poll."
+[knobs]
+no_state_events = true

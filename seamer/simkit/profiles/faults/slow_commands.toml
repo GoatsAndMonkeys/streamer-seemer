@@ -1,0 +1,4 @@
+description = "Every protocol request takes 1.5-2.5 s to answer."
+[knobs]
+latency_s = 1.5
+jitter_s = 1.0
