@@ -163,3 +163,20 @@ Run against MA dev (S/ma-dev) and, for #6872, the fix branch.
 | B43 unknown state KeyError | `inject_state` p=1, value "" | fails: 15 "Error while requesting latest state" warnings, MA volume stuck at 30 (device 55) | not run (branch targets #6872 only) |
 | ma#4398 single failed poll | `status_fail` (503, then a hang) | fails: 503 logged as an error, player unavailable about 1 s | not run |
 | inputs without image | `inputs_missing_attr = "image"` | fails: `PlayerUnexpectedResponseError: 'image'`, never registers | not run |
+
+## Bug hunt (`tests/e2e/hunt/bluos_hunt.py`)
+
+These 13 scenarios use the same harness as the smoke test, with up to three players per
+scenario. Sendspin is switched off, so the hunt never binds port 8927. Each test asserts
+the correct behaviour, so a failure on MA dev means the bug reproduces. Results against
+MA dev `cdff463ec`, each run 3 times (all 3/3 identical):
+
+| Scenario | Bug | dev |
+|---|---|---|
+| `inputs_text` | bss:B21, ha#151728 | fails: both inputs show as "Input: None" |
+| `follower_mute` | bl2:B29 | fails: the follower's mute in MA is the leader's, in both directions |
+| `input_volume` | volume guard | fails: on Optical, a device volume change (40 -> 55) never reaches MA |
+| `nad_connect` | bl2:B44, ma#3488 | fails: the queue goes IDLE for about 0.5 s while the C700 is still connecting (no skip) |
+| `drop_model` | ha#127500 | fails: pyblu raises on the missing `modelName`, so the player never registers |
+| `wedged_pause` | bss:B15 (low) | fails: MA's pause does not silence a player whose status is stuck on 'pause' |
+| `leader_ungroup`, `input_leader_ungroup`, `group_volume`, `preset`, `reboot`, `long_pause`, `bluos3` | B18/B33, B31, ha#161607, B25, R6, ma#6756, B51 | pass |
