@@ -1,0 +1,13 @@
+description = "Example player with every illustrative quirk switched on."
+extends = ["_base"]
+
+[identity]
+name = "Example Quirky"
+firmware = "0.9.1-beta"
+
+[knobs]
+ignore_pause = { p = 0.5 }       # EX-01 (low confidence)
+no_state_events = true           # EX-02
+report_state_names = "upper"
+load_delay_s = 0.5
+on_server_close = "drop"         # bss:B5-style

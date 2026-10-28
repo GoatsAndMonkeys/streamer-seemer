@@ -1,0 +1,11 @@
+# Shared base for example profiles. Files starting with "_" are not listed.
+[identity]
+manufacturer = "Seamer"
+model = "Example Player"
+firmware = "1.0.0"
+
+[surfaces]
+list = ["example_http"]
+
+[knobs]
+prebuffer_s = 0.3

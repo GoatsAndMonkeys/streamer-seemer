@@ -1,0 +1,5 @@
+description = "Well-behaved example player."
+extends = ["_base"]
+
+[identity]
+name = "Example Basic"
