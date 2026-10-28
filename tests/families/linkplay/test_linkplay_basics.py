@@ -188,3 +188,27 @@ async def test_gena_subscribe_and_notify(scene: Scene):
     finally:
         await cb.stop()
     assert attr("<x/>", "Volume") is None
+
+
+async def test_ssdp_answers_msearch(scene: Scene):
+    dev = await scene.device("linkplay/wiim_pro")
+    loop = asyncio.get_running_loop()
+    got: asyncio.Future[bytes] = loop.create_future()
+
+    class Proto(asyncio.DatagramProtocol):
+        def datagram_received(self, data: bytes, addr: object) -> None:
+            if not got.done():
+                got.set_result(data)
+
+    transport, _ = await loop.create_datagram_endpoint(Proto, local_addr=("127.0.0.1", 0))
+    try:
+        msg = (
+            'M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nMAN: "ssdp:discover"\r\n'
+            "MX: 1\r\nST: urn:schemas-upnp-org:device:MediaRenderer:1\r\n\r\n"
+        )
+        transport.sendto(msg.encode(), ("127.0.0.1", dev.ssdp.port))
+        data = (await asyncio.wait_for(got, 2)).decode()
+    finally:
+        transport.close()
+    assert f"{dev.base_url}/description.xml" in data
+    assert dev.udn in data

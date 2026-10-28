@@ -51,7 +51,7 @@ class Client:
         url = f"{self.dev.base_url}/upnp/{svc}/control"
         async with self.session.post(url, data=body, headers=headers) as r:
             text = await r.text()
-            return r.status, (upnp.soap_args(text) if text else {})
+            return r.status, (upnp.soap_args(text) if text.startswith("<") else {})
 
     async def avt(self, action: str, **args: Any) -> dict[str, str]:
         status, out = await self.soap("avt", action, InstanceID=0, **args)

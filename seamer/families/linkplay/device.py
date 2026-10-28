@@ -29,6 +29,7 @@ from typing import Any, ClassVar
 from aiohttp import web
 
 from ...simkit.device import SimDevice
+from ...simkit.kits.discovery import SsdpResponder, SsdpTarget
 from ...simkit.transport import MediaSlot, ReportLens, TState
 from . import knobs as _knobs  # noqa: F401  (registers the family's knobs)
 from . import proto, upnp
@@ -112,6 +113,7 @@ class LinkPlayDevice(SimDevice):
         self.http = HttpApi(self)
         self.gena = upnp.Gena(self.clock, self.rec.child("gena"), self.knobs, self._full_state)
         self.api_servers: dict[str, Any] = {}
+        self.ssdp: SsdpResponder | None = None
         self.booted_at = self.clock.monotonic()
         # quirk state
         self.stale_value: float | None = None
@@ -183,6 +185,23 @@ class LinkPlayDevice(SimDevice):
             self.api_servers["http"] = await self.serve(
                 self._api_app(), int(self.knobs.get("http_port"))
             )
+        # SSDP answers M-SEARCH on loopback; ctx.options["ssdp_port"] (default: ephemeral)
+        self.ssdp = SsdpResponder(
+            [
+                SsdpTarget(
+                    f"{self.base_url}/description.xml",
+                    self.udn,
+                    [
+                        "urn:schemas-upnp-org:device:MediaRenderer:1",
+                        *(upnp.SERVICES[k][0] for k in self._service_keys(True)),
+                    ],
+                )
+            ],
+            host=self.ctx.options.get("ssdp_host", "127.0.0.1"),
+            port=int(self.ctx.options.get("ssdp_port", 0)),
+            rec=self.rec.child("ssdp"),
+        )
+        await self.ssdp.start()
         self.booted_at = self.clock.monotonic()
         REGISTRY[self.uuid] = self
         self.rec.log("api", urls=self.api_urls, udn=self.udn)
@@ -195,6 +214,8 @@ class LinkPlayDevice(SimDevice):
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await t
         await self.gena.close()
+        if self.ssdp is not None:
+            await self.ssdp.stop()
 
     def client_ssl_context(self, with_cert: bool = True) -> ssl.SSLContext:
         """A client context for tests (skips verification; mTLS cert when asked)."""
@@ -603,7 +624,7 @@ class LinkPlayDevice(SimDevice):
         curpos = self._ms(pos)
         if (
             state in (TState.LOADING, TState.BUFFERING)
-            and tm.tracks_started > 1
+            and tm.tracks_started >= 1  # a stream ran before this load
             and self.knobs.fires("curpos_negative_on_restart")
         ):
             curpos = "-" + self._ms(1.2)  # LP-03
@@ -955,6 +976,7 @@ class LinkPlayDevice(SimDevice):
             "leader": self.leader.id if self.leader else None,
             "followers": [f.id for f in self.followers],
             "subscriptions": len(self.gena.subs),
+            "ssdp_port": self.ssdp.port if self.ssdp else None,
         }
 
     async def sim_action(self, name: str, payload: dict[str, Any]) -> Any:
