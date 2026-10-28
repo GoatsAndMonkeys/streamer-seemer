@@ -81,7 +81,8 @@ Generic behaviours use core knobs (`report_position_zero`, `report_duration_zero
 | `netfield_style` | enum | `'wiim'` | lq:Q6, L85, L61 | high | getStatusEx network/security fields: WiiM (apcli0 = IP, eth0 0.0.0.0, security https/2.0) or A31 (apcli0 empty string, security_version 2.0, no security field). |
 | `metadata_encoding` | enum | `'hex'` | lq:Q12, L52 | high | Title/Artist/Album in getPlayerStatus(Ex): hex UTF-8, plain text, or mixed (Title hex, Artist/Album plain 'unknown'). |
 | `idle_unknown_sentinel` | str | `'Unknown'` | L52, lq:Q13, L80 | high | Text reported for Title/Artist/Album when nothing is known (hex-encoded if hex). |
-| `artwork_sentinel` | str | `'unknow'` | lq:Q13, L80 | high | albumArtURI reported when there is no artwork. |
+| `artwork_sentinel` | str | `'unknow'` | lq:Q13, L80 | high | albumArtURI reported when there is no artwork. MA's own streams echo the art from MA's DIDL instead; app/input sources (`sim_action switch_source`, optional `art`) report the sentinel. |
+| `self_hosted_art` | bool | `False` | L58, L61 | medium | AirPlay sessions report cover art as the device's own self-signed HTTPS URL (`/data/AirplayArtWorkData.jpeg`, served with an empty Content-Type) in getMetaInfo and the AVTransport DIDL. |
 | `duplicate_vendor_key` | bool | `False` | L51 | medium | getPlayerStatusEx carries both 'vendor' and 'Vendor':'unknown'. |
 | `boot_status_none_s` | float | `0.0` | L53 | high | For this long after start, getPlayerStatusEx reports status 'none' and mode '-1'. |
 | `json_corruption` | prob | `{'p': 0.0}` | L54 | medium | getPlayerStatus(Ex) JSON has a doubled comma and a trailing '#'. |
@@ -159,3 +160,33 @@ Result on MA `dev` (2026-10-28):
 The two bug tests (`test_bug_6867_no_jump_ahead_after_seek`,
 `test_bug_6897_tv_input_releases_the_queue`) assert the correct behaviour, so they fail on
 current dev and should pass once fixed.
+
+## Bug hunt (`tests/e2e/hunt/linkplay_hunt.py`)
+
+Ten scenarios replay known WiiM / LinkPlay / Arylic reports against MA `dev`; each test
+asserts the correct behaviour. Run one scenario directly:
+
+```
+PYTHONPATH=$MA_REPO:. $MA_REPO/.venv/bin/python tests/e2e/hunt/linkplay_hunt.py arylic_long_pause
+MA_REPO=... .venv/bin/pytest -q tests/e2e/hunt/linkplay_hunt.py
+```
+
+Results (2026-10-28, each scenario run 3 times, 3/3 identical):
+
+| Scenario | Bug | Result |
+|---|---|---|
+| `art_unknow` | lq:Q13 / L80 | **Reproduces.** MA publishes `http://<device>/unknow` as the image URL |
+| `art_selfsigned` | L58 / L61 | **Reproduces.** MA publishes the raw `https://<device>/data/AirplayArtWorkData.jpeg`; a verifying client fails the certificate check |
+| `advance_drop` | lq:Q35 / MA#6557 | Not reproduced: MA follows the advance within one 5 s HTTP poll |
+| `advance_noevents` | MA#5900 / #5634 | Not reproduced: same, the official path polls over HTTP |
+| `arylic_register` | MA#4374 | Not reproduced: registers as `LinkPlayPlayer` |
+| `arylic_resume` | MA#6425 (701) | Not reproduced: MA reloads the URI instead of sending a bare Play |
+| `arylic_noflow_advance` | MA#6425 follow-up | **Reproduces.** Device stops after track 1; MA stays on index 0, no SetNext |
+| `arylic_flow_drift` | MA#6425 follow-up | **Reproduces.** MA elapsed 0 while the device is 23 s into track 2; MA restarts track 2 from 0 when the flow buffer ends |
+| `arylic_long_pause` | MA#6756 | **Reproduces.** After a 40 s pause, queue play sends nothing to the device |
+| `arylic_evented_resume` | new | **Reproduces.** Even with state events, queue play on a paused LinkPlay shell sends nothing |
+
+The official-path scenarios patch every pywiim `WiiMClient` (including the per-poll
+group-read client) to the sim's API port. Without that, each poll stalls ~14 s on a port
+the sim does not serve, which falsely makes `advance_drop` and `advance_noevents` look
+reproduced.
