@@ -163,6 +163,17 @@ knob(
     "(ESP: one loop tick). missing never echoes (noncompliant).",
 )
 knob(
+    "volume_steps",
+    family=FAMILY,
+    type="int",
+    default=0,
+    quirks=("SS24", "SS44"),
+    confidence="medium",
+    doc="Hardware volume with this many steps (0 = continuous): a commanded volume snaps "
+    "to the nearest step and client/state reports the snapped value, as a DAC or "
+    "external volume controller does.",
+)
+knob(
     "state_echo_delay_ms",
     family=FAMILY,
     type="float",
@@ -410,4 +421,25 @@ knob(
     confidence="medium",
     doc="Drop the connection with goodbye 'restart' after this much server silence "
     "(ESP 60 s). 0 disables.",
+)
+knob(
+    "rx_window_stall_ms",
+    family=FAMILY,
+    type="float",
+    default=0.0,
+    unit="ms",
+    quirks=("SS30", "SS6"),
+    confidence="medium",
+    doc="Wi-Fi starvation: stop reading the socket (zero TCP window) for this long, once, "
+    "rx_window_stall_at_s after the first connection opens. 0 disables.",
+)
+knob(
+    "rx_window_stall_at_s",
+    family=FAMILY,
+    type="float",
+    default=20.0,
+    unit="s",
+    quirks=("SS30",),
+    confidence="medium",
+    doc="When the rx_window_stall_ms stall starts, in seconds after the first connection.",
 )

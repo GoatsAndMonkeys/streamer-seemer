@@ -123,7 +123,12 @@ class G2Endpoint:
     async def _watch_admission(self, ws: web.WebSocketResponse) -> None:
         """attach_websocket only returns at close; report the session once it is admitted."""
         assert self.client is not None
+        never = self.dev.knobs.get("available_mode") == "never"
         while not ws.closed:
+            conn = getattr(self.client, "_admitted_connection", None)
+            if never and conn is not None and conn._reported_available:
+                # before the time filter converges, so available:true never goes out (SS36)
+                conn._reported_available = False
             info = self.client.server_info
             if self.client.connected and info is not None:
                 self.dev.on_session_up(info.server_id, info.name)

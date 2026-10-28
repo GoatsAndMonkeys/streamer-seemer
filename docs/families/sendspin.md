@@ -94,6 +94,7 @@ The family has 38 knobs.
 | `supported_commands` | `'volume,mute'` | SS57 | high | Player commands declared in client/state (G2) or the hello (G0). Add set_output_delay for adjustable delay. |
 | `initial_volume` | `50` | SS44 | medium | Volume reported at connect (persisted across restarts). |
 | `volume_unmutes` | `False` | SS44 | medium | A volume command also clears mute (ESPHome before 2026.9.0). |
+| `volume_steps` | `0` | SS24, SS44 | medium | Hardware volume resolution: the device snaps a commanded volume to the nearest of this many steps and echoes the snapped value. 0 = exact. |
 | `state_echo` | `'immediate'` | SS24 | high | How client/state follows a server/command. delayed waits state_echo_delay_ms (ESP: one loop tick). missing never echoes (noncompliant). |
 | `state_echo_delay_ms` | `0.0` | SS24, SS9 | medium | Delay of the client/state echo when state_echo=delayed. |
 | `available_mode` | `'until_converged'` | SS36 | high | until_converged: available flips true once the time filter converges (G2 spec; G0 reports state 'synchronized' at once). never: the player never reports available. |
@@ -118,6 +119,8 @@ The family has 38 knobs.
 | `fault_mode` | `'none'` | SS28, SS29, SS34 | high | accept_and_hang: upgrade the WebSocket, then never send a hello. blackhole: after blackhole_after_s stop reading and answering but keep the socket open. never_consume: the DAC never plays, so the buffer fills and overruns. |
 | `blackhole_after_s` | `5.0` | SS29 | medium | Seconds after connect at which fault_mode=blackhole takes effect. |
 | `liveness_timeout_s` | `0.0` | SS55 | medium | Drop the connection with goodbye 'restart' after this much server silence (ESP 60 s). 0 disables. |
+| `rx_window_stall_ms` | `0.0` | SS30, SS6 | medium | Wi-Fi starvation: stop reading the socket for this long (once, at rx_window_stall_at_s after connect) while the link stays up, so the server's writes back up. 0 disables. |
+| `rx_window_stall_at_s` | `20.0` | SS30 | medium | Seconds after connect at which the rx_window_stall_ms stall starts. |
 
 ## Tests
 
@@ -160,3 +163,21 @@ another profile, set `SEAMER_PROFILE=sendspin/<name>`.
 | `bug6888` (python-cli, goodbye `shutdown`) | **fails, which reproduces #6888.** The `restart` control is re-dialed. After `shutdown`, MA never dials again; aiosendspin logs `Not reconnecting to … (goodbye reason: shutdown)`. |
 | `bug6888_user_request` | **fails**, by the same mechanism: only `restart` keeps the reconnect loop alive. |
 | `bug6887` (goodbye `another_server`) | **passes on dev**, for S3 G2, esphome_legacy G0 and voice_pe G0 alike. The player stays listed and available, and play reclaims the device (a new session, and chunks play). Dev's held-elsewhere handling and aiosendspin's retention of `ANOTHER_SERVER` clients seem to fix the 2.10.8 symptom. The test stays as a regression guard. |
+
+### Bug hunt (`tests/e2e/hunt/`)
+
+Seventeen scenarios, each run 3 times against MA dev cdff463ec (aiosendspin 10.2.1):
+
+    MA_REPO=/path/to/ma-dev .venv/bin/python tests/e2e/hunt/run_hunt.py --repeat 3 -j 4 --out /tmp/hunt
+
+`test_hunt.py` runs the same set under pytest when `MA_REPO` is set. Bugs that reproduce
+are strict xfails, so a fix in MA shows up as an XPASS.
+
+| Reproduced 3/3 | What fails |
+|---|---|
+| `ss26_shutdown_manual_ip` (#6888) | A manual-IP device that sends goodbye `shutdown` is never dialed again. Over mDNS (Added or Updated) it is re-dialed in 0.3 s. |
+| `ss36_available_never` (SS36) | A player that reports `available:false` shows as available and "playing" in MA, while aiosendspin correctly sends it no audio. |
+| `ss56_offline_redial_gap` (SS56) | A manual-IP device that is gone for 130 s waits about 125 s more after it returns, because of exponential backoff (cap 300 s). |
+
+The other fourteen pass. They stay as regression guards: SS24, SS27, SS28, SS29, SS30,
+SS35, SS44, SS48, SS53, SS55, SS5, MA restart, and the two mDNS variants of SS26.

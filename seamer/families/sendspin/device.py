@@ -124,6 +124,7 @@ class SendspinDevice(SimDevice):
         self._mdns: MdnsAdvertiser | None = None
         self._live_req: web.Request | None = None
         self._down = False
+        self._rx_stalled = False
 
     # -- identity ----------------------------------------------------------------------
 
@@ -178,6 +179,13 @@ class SendspinDevice(SimDevice):
             return ws
         if fault == "blackhole":
             self.clock.call_later(float(self.knobs.get("blackhole_after_s")), self._blackhole)
+        stall_ms = float(self.knobs.get("rx_window_stall_ms"))
+        if stall_ms > 0 and not self._rx_stalled:
+            self._rx_stalled = True
+            self.clock.call_later(
+                float(self.knobs.get("rx_window_stall_at_s")),
+                lambda: self._rx_stall(req, stall_ms),
+            )
         try:
             if self.wire_gen == "G0":
                 puppet = WirePuppet(self, ws)
@@ -212,6 +220,21 @@ class SendspinDevice(SimDevice):
         with contextlib.suppress(AttributeError, TypeError):
             transport.write = lambda _data: None  # type: ignore[method-assign]
         self.rec.event("blackhole", after_s=self.knobs.get("blackhole_after_s"))
+
+    def _rx_stall(self, req: web.Request, stall_ms: float) -> None:
+        """Stop reading for ``stall_ms`` with the socket open: a starved Wi-Fi link (SS30)."""
+        transport = req.transport
+        if transport is None or transport.is_closing():
+            return
+        transport.pause_reading()
+        self.rec.event("rx_stall", ms=stall_ms)
+
+        def _resume() -> None:
+            if not transport.is_closing():
+                transport.resume_reading()
+            self.rec.event("rx_resume")
+
+        self.clock.call_later(stall_ms / 1000, _resume)
 
     async def hold_blackhole(self, ws: web.WebSocketResponse) -> None:
         while not ws.closed:
@@ -295,7 +318,7 @@ class SendspinDevice(SimDevice):
     ) -> None:
         self.rec.cmd("server/command", command=command, volume=volume, mute=mute, delay=delay_ms)
         if command == "volume" and volume is not None:
-            self.volume = max(0, min(100, int(volume)))
+            self.volume = self._snap_volume(max(0, min(100, int(volume))))
             if self.knobs.get("volume_unmutes"):
                 self.muted = False
         elif command == "mute" and mute is not None:
@@ -307,6 +330,15 @@ class SendspinDevice(SimDevice):
             return
         self.rec.state("player", volume=self.volume, muted=self.muted, delay=self.output_delay_ms)
         await self._echo_state()
+
+    def _snap_volume(self, volume: int) -> int:
+        steps = int(self.knobs.get("volume_steps"))
+        if steps <= 0:
+            return volume
+        snapped = round(round(volume * steps / 100) * 100 / steps)
+        if snapped != volume:
+            self.rec.knob("volume_steps", commanded=volume, reported=snapped)
+        return snapped
 
     async def _echo_state(self) -> None:
         mode = self.knobs.get("state_echo")
