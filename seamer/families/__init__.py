@@ -30,6 +30,7 @@ class Family:
     description: str = ""
     default_profile: str = "default"
     default_port: int = 0  # suggested port for `seamer run` when --port is omitted
+    aliases: tuple[str, ...] = ()  # other names get_family accepts (e.g. "wiim")
 
     def profiles(self) -> list[str]:
         return list_profiles(self.profiles_dir)
@@ -80,6 +81,9 @@ def errors() -> dict[str, str]:
 def get_family(name: str) -> Family:
     fams = discover()
     if name not in fams:
+        for fam in fams.values():
+            if name in fam.aliases:
+                return fam
         hint = f"; import errors: {_ERRORS}" if _ERRORS else ""
         raise FamilyError(f"unknown family {name!r} (have: {sorted(fams)}){hint}")
     return fams[name]
@@ -103,7 +107,7 @@ def build_device(
     prof = fam.load_profile(profile, overrides)
     clock = clock or RealClock()
     ctx = DeviceContext(
-        device_id=device_id or f"{family}1",
+        device_id=device_id or f"{fam.name}1",
         profile=prof,
         recorder=recorder or Recorder(clock=clock),
         clock=clock,
