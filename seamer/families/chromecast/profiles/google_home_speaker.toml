@@ -1,0 +1,16 @@
+description = "Google Home / Nest Audio class speaker: 24 MiB Content-Length cutoff (C9/C33), rare mid-flow decode errors (C30), MA receiver app unavailable (C39)."
+extends = ["_base"]
+
+[identity]
+name = "Living room speaker"
+model = "Google Home"
+firmware = "1.56.500000"
+uuid = "5eedc0de00000000000000000000a002"
+mac = "02:00:5e:00:a0:02"
+groups = [{ name = "Downstairs", uuid = "5eedc0de00000000000000000000b001", multichannel_group = false }]
+
+[knobs]
+content_length_cutoff_bytes = 25165824                      # C9/C33: exactly 24 MiB
+spontaneous_error = { mean_s = 4000, code = 102, dup = 2, gap_ms = 30, then = "load_next" }  # C30
+launch_error = { C35B0678 = "NOT_FOUND" }                   # C35/C39: falls back to CC1AD845
+output_delay_ms = 330

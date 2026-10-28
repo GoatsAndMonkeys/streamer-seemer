@@ -1,0 +1,13 @@
+# Shared base for Cast receivers. Files starting with "_" are not listed.
+# UUIDs and MACs are fake; addresses come from the run (127.0.0.1 / 192.0.2.x).
+[identity]
+manufacturer = "Google Inc."
+cast_type = "audio"
+ca = 4101          # TXT capability bits: audio out + multizone (research 2a)
+volume = 0.3
+
+[surfaces]
+list = ["castv2", "eureka_info", "mdns_googlecast"]
+
+[knobs]
+supported_media_commands = 12303   # C6

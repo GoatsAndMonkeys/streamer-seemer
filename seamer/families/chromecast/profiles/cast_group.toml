@@ -1,0 +1,19 @@
+description = "Cast speaker group: BUFFERING forever at the end of the flow (C1/C42), announcement tail cut (C28/#6695), leader endpoint moves (C25)."
+extends = ["_base"]
+
+[identity]
+name = "Whole house"
+model = "Google Cast Group"
+firmware = "1.56.500000"
+uuid = "5eedc0de00000000000000000000b001"
+mac = "02:00:5e:00:b0:01"
+cast_type = "group"
+members = [
+  { uuid = "5eedc0de00000000000000000000a001", name = "Kitchen speaker" },
+  { uuid = "5eedc0de00000000000000000000a002", name = "Living room speaker" },
+]
+
+[knobs]
+idle_on_eof = "stay_buffering"   # C1/C42
+clip_tail_cut_ms = 1500          # C28/#6695 (low confidence)
+leader_move_gap_s = 2.0          # C25; leader_moves_after_s or the leader_move action triggers it
