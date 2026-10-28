@@ -1,0 +1,23 @@
+description = "WiiM Mini (R328): older firmware, no optical in, slow HTTP after switchmode."
+extends = ["_base"]
+
+[identity]
+name = "WiiM Mini"
+manufacturer = "Linkplay"
+manufacturer_url = "https://www.wiimhome.com"
+model = "WiiM Mini"
+model_number = "Muzo_Mini"
+project = "Muzo_Mini"
+hardware = "ALLWINNER-R328"
+firmware = "Linkplay.4.6.415145"
+release = "20240312"
+uuid = "FF970016A6FE22C8F5B71E04"
+serial = "000000000001"
+ip = "192.0.2.22"
+mac = "02:00:5E:00:00:22"
+inputs = "wifi,bluetooth,line-in"
+outputs = "Line Out:AUDIO_OUTPUT_AUX_MODE,Optical Out:AUDIO_OUTPUT_SPDIF_MODE"
+
+[knobs]
+load_delay_s = 0.6
+switchmode_empty_body_s = 1.0      # L67

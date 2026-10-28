@@ -1,0 +1,23 @@
+description = "Audio Pro A10 MkII: mutual-TLS API on 4443-style port, no getPlayerStatusEx."
+extends = ["_base"]
+
+[identity]
+name = "Audio Pro A10"
+manufacturer = "Audio Pro AB"
+manufacturer_url = "https://www.audiopro.com"
+model = "A10 MkII"
+model_number = "A10_MkII"
+project = "A10_MkII"
+hardware = "A31"
+firmware = "Linkplay.4.2.9327"
+release = "20250110"
+uuid = "FF31F09E1A5020113B0A0010"
+serial = "000000000003"
+ip = "192.0.2.24"
+mac = "02:00:5E:00:00:24"
+
+[knobs]
+client_cert_required = true        # lq:Q1, L56 (real units: port 4443)
+unsupported_commands = "getStatus,getAudioOutputStatus,getPlayerStatusEx,getSoundCardModeSupportList"
+metainfo = "unsupported"
+playqueue = "hidden"

@@ -1,0 +1,32 @@
+description = "Arylic Up2Stream Pro (A31, old LinkPlay): plain HTTP, no gapless, no state events."
+extends = ["_base"]
+
+[identity]
+name = "Arylic Up2Stream"
+manufacturer = "Linkplay"
+model = "UP2STREAM_PRO_V3"
+model_number = "UP2STREAM_PRO_V3"
+project = "UP2STREAM_PRO_V3"
+hardware = "A31"
+firmware = "4.2.8020"
+release = "20220506"
+uuid = "FF31F0121A5020113B0A0020"
+serial = "000000000004"
+ip = "192.0.2.25"
+mac = "02:00:5E:00:00:25"
+inputs = "wifi,bluetooth,line-in,optical"
+
+[knobs]
+http_scheme = "http_only"
+netfield_style = "a31"
+wmrm_version = "2.0"
+report_position_zero = true
+set_next_supported = false         # LP-06
+no_state_events = true             # LP-07
+resume_701 = { p = 0.5 }           # LP-08
+transition_gap_s = 3.5
+failure_word = "Fail"
+slavelist_shape = "legacy_caps_strings"
+playqueue = "absent"
+getinfoex_supported = false
+load_delay_s = 0.8
