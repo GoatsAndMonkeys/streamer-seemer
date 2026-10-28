@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
@@ -35,6 +35,7 @@ from .buffer import BufferModel, OnServerClose
 from .decoder import Decoder, DecoderError, pick_decoder
 
 SinkListener = Callable[[str, dict[str, Any]], None]
+CapPolicy = Callable[[int, Mapping[str, str], int, float], tuple[int, float]]
 TONE_WINDOW_S = 0.1
 MAX_REFETCH = 20
 
@@ -102,6 +103,9 @@ class HttpSink:
         self._pcm_channels = 2
         self._generation = 0
         self._decoder: Decoder | None = None
+        # optional per-response cap override: (status, headers, byte_cap, time_cap) ->
+        # (byte_cap, time_cap); lets a family cap only e.g. responses with a length
+        self.cap_policy: CapPolicy | None = None
 
     # -- public API --------------------------------------------------------------
 
@@ -333,6 +337,8 @@ class HttpSink:
                 chunked=chunked,
                 content_length=resp.content_length,
             )
+            if self.cap_policy is not None:
+                byte_cap, time_cap = self.cap_policy(resp.status, resp.headers, byte_cap, time_cap)
             if resp.status >= 400:
                 raise SinkRejected(f"HTTP {resp.status}")
             if k.get("reject_chunked") and chunked:
