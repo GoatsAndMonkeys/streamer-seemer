@@ -1,0 +1,20 @@
+description = "sendspin-cpp-cli on a Linux desktop: G2, big buffer, cpp corrector, host output-latency misestimate."
+extends = ["_base"]
+
+[identity]
+name = "Desk Linux"
+manufacturer = "sendspin-cpp"
+product_name = "sendspin-cpp-cli"
+software_version = "0.9.0"
+
+[knobs]
+wire_gen = "G2"
+roles = "player,controller,metadata"
+formats = "flac:48000:24:2,flac:48000:16:2,opus:48000:16:2,pcm:48000:16:2"
+buffer_capacity = 2000000
+required_lead_time_ms = 150
+min_buffer_ms = 500
+corrector = "cpp"
+output_latency_error_ms = 12          # SS32
+supported_commands = "volume,mute,set_output_delay"
+mac_address = "aa:bb:cc:00:00:06"

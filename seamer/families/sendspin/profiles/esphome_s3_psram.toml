@@ -1,0 +1,24 @@
+description = "ESPHome 2026.10.0b2+ on an ESP32-S3 with PSRAM: G2 (Noise), FLAC/PCM/Opus, 621,312-byte budget."
+extends = ["_base"]
+
+[identity]
+name = "Kitchen Speaker"
+manufacturer = "Espressif"
+product_name = "ESP32-S3 (PSRAM)"
+software_version = "ESPHome 2026.10.0"
+
+[knobs]
+wire_gen = "G2"                       # SS18
+roles = "player,controller"           # ESP: no metadata role
+formats = "flac:48000:16:2,opus:48000:16:2,pcm:48000:16:2"
+buffer_capacity = 621312              # SS21
+required_lead_time_ms = 150           # SS22
+min_buffer_ms = 500
+mac_address = "aa:bb:cc:00:00:01"
+corrector = "cpp"
+clock_skew_ppm = 20
+dac_skew_ppm = 30
+start_gate_ms = 25
+state_echo = "delayed"                # SS24: one loop tick
+state_echo_delay_ms = 16
+liveness_timeout_s = 60               # SS55

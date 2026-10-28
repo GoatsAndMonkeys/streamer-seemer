@@ -1,0 +1,20 @@
+description = "Plain ESP32 without PSRAM: small budget, Opus decode cannot keep up (stutter), drops late chunks."
+extends = ["_base"]
+
+[identity]
+name = "Garage Speaker"
+manufacturer = "Espressif"
+product_name = "ESP32 (no PSRAM)"
+software_version = "ESPHome 2026.10.0"
+
+[knobs]
+wire_gen = "G2"
+roles = "player"
+formats = "opus:48000:16:2,flac:48000:16:2"
+buffer_capacity = 98304               # SS21: internal RAM only
+required_lead_time_ms = 150
+min_buffer_ms = 500
+opus_decode_rt_factor = 1.3           # SS5, SS31: slower than real time
+decode_rt_factor = 0.4
+mac_address = "aa:bb:cc:00:00:04"
+dac_skew_ppm = 60

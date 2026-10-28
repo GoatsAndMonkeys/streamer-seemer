@@ -1,0 +1,13 @@
+# Shared base for Sendspin profiles. Files starting with "_" are not listed.
+# Addresses in docs/tests use 192.0.2.x; MACs are fake (aa:bb:cc:00:00:0X).
+[identity]
+manufacturer = "Seamer"
+product_name = "Sendspin Sim"
+software_version = "0.0.0"
+
+[surfaces]
+list = ["sendspin_ws"]
+
+[knobs]
+load_delay_s = 0.0          # stream/start is the play moment; no extra load step
+transition_gap_s = 0.0

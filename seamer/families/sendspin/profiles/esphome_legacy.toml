@@ -1,0 +1,21 @@
+description = "ESPHome 2026.5 to 2026.10.0b1: G0 wire (unencrypted client/hello, MAC as client_id, 9-byte audio header)."
+extends = ["_base"]
+
+[identity]
+name = "Living Room Speaker"
+manufacturer = "Espressif"
+product_name = "ESP32-S3 (PSRAM)"
+software_version = "ESPHome 2026.9.2"
+
+[knobs]
+wire_gen = "G0"                       # SS18, SS53
+client_id_mode = "mac"                # SS1
+mac_address = "aa:bb:cc:00:00:02"
+roles = "player,controller"
+formats = "flac:48000:16:2,pcm:48000:16:2"
+buffer_capacity = 800000              # SS35: before the 2/3 cap
+required_lead_time_ms = 150
+min_buffer_ms = 500
+legacy_state_field = true             # SS36
+volume_unmutes = true                 # SS44: before 2026.9.0 (medium confidence)
+corrector = "cpp"
