@@ -13,7 +13,8 @@ Everything the sink does is recorded as ``kind="sink"`` events. Listeners (usual
 :class:`~seamer.simkit.transport.TransportMachine`) get ``(name, data)`` callbacks for:
 ``opened``, ``first_audio``, ``underrun``, ``rebuffered``, ``eof``, ``cap_hit``,
 ``dropped``, ``drained``, ``track_change``, ``error`` and finally ``ended`` (natural end,
-data has ``reason``) or ``closed`` (client-side close).
+data has ``reason``) or ``closed`` (client-side close). A body cut short of its
+Content-Length counts as a server close (``eof`` with ``truncated=True``), not an error.
 """
 
 from __future__ import annotations
@@ -347,11 +348,18 @@ class HttpSink:
             self.decoder_name = decoder.name
             self._decoder = decoder
             await decoder.start(self._on_audio)
+            truncated = False
             try:
                 while True:
                     while realtime and self.buffer.full:
                         await self.clock.sleep(self.tick_s)
-                    data = await resp.content.read(self.read_bytes)
+                    try:
+                        data = await resp.content.read(self.read_bytes)
+                    except aiohttp.ClientPayloadError:
+                        # the server closed before its Content-Length was met
+                        # (e.g. a forced, oversized length): still a server close
+                        truncated = True
+                        break
                     if not data:
                         break
                     if byte_cap and self.bytes_read + len(data) > byte_cap:
@@ -380,6 +388,7 @@ class HttpSink:
             bytes=self.bytes_read,
             received_s=round(self.buffer.received_s, 3),
             unplayed_s=round(self.buffer.fill_s, 3),
+            **({"truncated": True} if truncated else {}),
         )
         return "eof"
 
