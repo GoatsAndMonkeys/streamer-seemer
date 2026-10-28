@@ -1,0 +1,19 @@
+description = "shairport-sync 4.x (AirPlay 2 build): refuses NTP AP2 streams, resets control ~80 s in."
+extends = ["_base"]
+
+[identity]
+name = "Shairport Sync"
+manufacturer = "Shairport Sync"
+model = "ShairportSync"
+firmware = "4.3.7"
+srcvers = "366.0"
+ip = "192.0.2.45"
+mac = "02:00:5E:00:00:45"
+deviceid = "02:00:5E:00:00:45"
+
+[knobs]
+ntp_streams = "reject_400"       # ca2:A32
+first_probe_ms = 40
+clock_lock_ms = { min = 150, max = 400 }
+reset_control_after_s = 80.0     # ca2:A32/A45, MA#6243
+volume_echo = { enabled = true, delay_ms = 100, burst = 1 }

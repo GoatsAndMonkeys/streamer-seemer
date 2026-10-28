@@ -1,0 +1,17 @@
+description = "WiiM Pro Plus as an AirPlay 2 receiver: audio drops out early in the first play."
+extends = ["_base"]
+
+[identity]
+name = "WiiM Pro Plus"
+manufacturer = "Linkplay"
+model = "WiiM Pro Plus"
+firmware = "5.2.712345"
+ip = "192.0.2.43"
+mac = "02:00:5E:00:00:43"
+deviceid = "02:00:5E:00:00:43"
+
+[knobs]
+first_probe_ms = 120
+clock_lock_ms = { min = 300, max = 600 }
+starve_after_ms = { ms = 20000, first_play_only = true }  # ca2:A39, MA#5714
+volume_echo = { enabled = true, delay_ms = 400, burst = 1 }

@@ -1,0 +1,22 @@
+description = "HomePod mini on OS 27: own PTP clock, RAOP broken, buffered anchors refused."
+extends = ["_base"]
+
+[identity]
+name = "Kitchen HomePod"
+manufacturer = "Apple Inc."
+model = "AudioAccessory5,1"
+firmware = "27.0"
+srcvers = "900.7.1"
+features = "0x4A7FDFD5,0xBC177FDE"
+ip = "192.0.2.42"
+mac = "02:00:5E:00:00:42"
+deviceid = "02:00:5E:00:00:42"
+audio_formats_extended = [18, 19, 21]
+
+[knobs]
+first_probe_ms = 1000                         # ca2:A35
+clock_lock_ms = { min = 1000, max = 1400 }    # ca2:A35
+ptp_role = "standalone_own_clock"             # ca2:A28
+raop_mode = "auth_setup_404"                  # ca2:A40, MA#5851
+buffered_anchor_always_400 = true             # ca2:A34, MA#6430
+volume_echo = { enabled = false, delay_ms = 250, burst = 1 }  # MA ignores Apple reports anyway

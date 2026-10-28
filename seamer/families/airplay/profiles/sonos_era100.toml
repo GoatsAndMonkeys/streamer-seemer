@@ -1,0 +1,20 @@
+description = "Sonos Era 100 over AirPlay 2: slow PTP lock, anchor 400s, minute-long volume ticks."
+extends = ["_base"]
+
+[identity]
+name = "Sonos Era 100"
+manufacturer = "Sonos"
+model = "Era 100"
+firmware = "84.1-60230"
+ip = "192.0.2.41"
+mac = "02:00:5E:00:00:41"
+deviceid = "02:00:5E:00:00:41"
+srcvers = "366.0"
+
+[knobs]
+first_probe_ms = 1078                                # cas:P6
+clock_lock_ms = { min = 1700, max = 2300 }           # cas:P6 / ca2:A29
+anchor_400 = { p = 0.5, count = 2, retry_ms = 500 }  # ca2:A34, MA#6348
+require_metadata_before_audio = true                 # ca2:A50
+volume_apply_tick_s = { min = 45.0, max = 65.0, step = 0 }  # ca2:A49, MA#6664
+volume_echo = { enabled = true, delay_ms = 250, burst = 1 } # ca2:A49
