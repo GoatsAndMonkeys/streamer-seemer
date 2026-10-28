@@ -326,6 +326,7 @@ class HttpSink:
             await self._probe(session, url, k.get("probe"))
         headers = {"Range": "bytes=0-"} if k.get("require_range") else {}
         byte_cap = k.get("byte_cap")
+        time_cap = k.get("time_cap_s")
         realtime = k.get("read_mode") == "realtime"
         async with session.get(url, headers=headers) as resp:
             chunked = "chunked" in resp.headers.get("Transfer-Encoding", "").lower()
@@ -337,8 +338,11 @@ class HttpSink:
                 chunked=chunked,
                 content_length=resp.content_length,
             )
+            policy_time_cap = time_cap
             if self.cap_policy is not None:
-                byte_cap, time_cap = self.cap_policy(resp.status, resp.headers, byte_cap, time_cap)
+                byte_cap, policy_time_cap = self.cap_policy(
+                    resp.status, resp.headers, byte_cap, time_cap
+                )
             if resp.status >= 400:
                 raise SinkRejected(f"HTTP {resp.status}")
             if k.get("reject_chunked") and chunked:
@@ -371,9 +375,11 @@ class HttpSink:
                         data = data[: byte_cap - self.bytes_read]
                     self.bytes_read += len(data)
                     await decoder.feed(data)
-                    time_cap = k.get("time_cap_s")  # re-read: set_live may cap mid-stream
+                    # re-read: set_live may cap mid-stream; otherwise keep the policy's cap
+                    live_cap = k.get("time_cap_s")
+                    cap_s = live_cap if live_cap != time_cap else policy_time_cap
                     if (byte_cap and self.bytes_read >= byte_cap) or (
-                        time_cap and self.buffer.received_s >= time_cap
+                        cap_s and self.buffer.received_s >= cap_s
                     ):
                         await decoder.finish()
                         self._flush_pcm()
