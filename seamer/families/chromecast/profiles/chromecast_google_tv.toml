@@ -1,0 +1,15 @@
+description = "Chromecast with Google TV: video device (Backdrop idle app, isActiveInput/isStandBy), master volume via CEC."
+extends = ["_base"]
+
+[identity]
+name = "Living room TV"
+model = "Chromecast"
+firmware = "1.56.500000"
+uuid = "5eedc0de00000000000000000000a003"
+mac = "02:00:5e:00:a0:03"
+cast_type = "cast"
+ca = 201221
+
+[knobs]
+control_type = "master"     # C7
+output_delay_ms = 335       # C14 (CCA class)

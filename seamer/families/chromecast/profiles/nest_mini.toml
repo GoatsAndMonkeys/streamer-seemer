@@ -1,0 +1,14 @@
+description = "Google Nest Mini (2nd gen): no-Content-Length streams stop after ~7 min (C10/C33), apps quit after 5 min idle (C41)."
+extends = ["_base"]
+
+[identity]
+name = "Kitchen speaker"
+model = "Google Nest Mini"
+firmware = "1.56.500000"
+uuid = "5eedc0de00000000000000000000a001"
+mac = "02:00:5e:00:a0:01"
+
+[knobs]
+no_content_length_stop_after_s = 420.0   # C10/C33 (300-600 s observed)
+output_delay_ms = 427                    # C14
+idle_app_timeout_s = 300.0               # C41

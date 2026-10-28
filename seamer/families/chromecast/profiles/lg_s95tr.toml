@@ -1,0 +1,18 @@
+description = "Third-party Cast stack (LG S95TR soundbar style): strict Content-Type (C12), Range re-request (X5), control socket killed after a flow restart (C34), no MA receiver (C35)."
+extends = ["_base"]
+
+[identity]
+name = "Soundbar"
+manufacturer = "LG Electronics"
+model = "S95TR"
+firmware = "4.1.0"
+uuid = "5eedc0de00000000000000000000c001"
+mac = "02:00:5e:00:c0:01"
+
+[knobs]
+strict_content_type = true                         # C12
+range_rerequest_after_bytes = 10485760             # X5: ~10 MB
+kill_control_socket_after_flow_restart_s = 11.0    # C34
+launch_error = { C35B0678 = "NOT_FOUND" }          # C35
+control_type = "master"
+output_delay_ms = 370                              # C14 (LG SPx)
