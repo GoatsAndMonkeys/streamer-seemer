@@ -94,6 +94,7 @@ The family has 38 knobs.
 | `supported_commands` | `'volume,mute'` | SS57 | high | Player commands declared in client/state (G2) or the hello (G0). Add set_output_delay for adjustable delay. |
 | `initial_volume` | `50` | SS44 | medium | Volume reported at connect (persisted across restarts). |
 | `volume_unmutes` | `False` | SS44 | medium | A volume command also clears mute (ESPHome before 2026.9.0). |
+| `volume_steps` | `0` | SS24, SS44 | medium | Hardware volume resolution: the device snaps a commanded volume to the nearest of this many steps and echoes the snapped value. 0 = exact. |
 | `state_echo` | `'immediate'` | SS24 | high | How client/state follows a server/command. delayed waits state_echo_delay_ms (ESP: one loop tick). missing never echoes (noncompliant). |
 | `state_echo_delay_ms` | `0.0` | SS24, SS9 | medium | Delay of the client/state echo when state_echo=delayed. |
 | `available_mode` | `'until_converged'` | SS36 | high | until_converged: available flips true once the time filter converges (G2 spec; G0 reports state 'synchronized' at once). never: the player never reports available. |
@@ -118,6 +119,8 @@ The family has 38 knobs.
 | `fault_mode` | `'none'` | SS28, SS29, SS34 | high | accept_and_hang: upgrade the WebSocket, then never send a hello. blackhole: after blackhole_after_s stop reading and answering but keep the socket open. never_consume: the DAC never plays, so the buffer fills and overruns. |
 | `blackhole_after_s` | `5.0` | SS29 | medium | Seconds after connect at which fault_mode=blackhole takes effect. |
 | `liveness_timeout_s` | `0.0` | SS55 | medium | Drop the connection with goodbye 'restart' after this much server silence (ESP 60 s). 0 disables. |
+| `rx_window_stall_ms` | `0.0` | SS30, SS6 | medium | Wi-Fi starvation: stop reading the socket for this long (once, at rx_window_stall_at_s after connect) while the link stays up, so the server's writes back up. 0 disables. |
+| `rx_window_stall_at_s` | `20.0` | SS30 | medium | Seconds after connect at which the rx_window_stall_ms stall starts. |
 
 ## Tests
 
