@@ -301,21 +301,24 @@ def build_strm(
     request: bytes = b"",
 ) -> bytes:
     """Server-side strm payload (used by tests and the fake server)."""
-    return STRM_STRUCT.pack(
-        command.encode(),
-        autostart.encode(),
-        codec.encode(),
-        threshold_kb,
-        b"0",
-        0,
-        b"0",
-        flags,
-        output_threshold,
-        0,
-        replay_gain,
-        server_port,
-        server_ip,
-    ) + request
+    return (
+        STRM_STRUCT.pack(
+            command.encode(),
+            autostart.encode(),
+            codec.encode(),
+            threshold_kb,
+            b"0",
+            0,
+            b"0",
+            flags,
+            output_threshold,
+            0,
+            replay_gain,
+            server_port,
+            server_ip,
+        )
+        + request
+    )
 
 
 @dataclass

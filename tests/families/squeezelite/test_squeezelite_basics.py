@@ -72,7 +72,7 @@ async def test_play_to_eof_event_order(scene: Scene):
     url = await track_url(scene, 1, 2.0)
     srv.play(url)
     await srv.wait("STMu", timeout=10)
-    ev = [e for e in srv.events() if e.startswith("STM") and e != "STMt" or e == "RESP"]
+    ev = [e for e in srv.events() if (e.startswith("STM") and e != "STMt") or e == "RESP"]
     assert ev[:4] == ["STMf", "STMf", "STMf", "STMc"] or ev[:2] == ["STMf", "STMf"]
     order = [e for e in ev if e in ("STMc", "RESP", "STMs", "STMd", "STMu")]
     assert order == ["STMc", "RESP", "STMs", "STMd", "STMu"]
@@ -82,7 +82,7 @@ async def test_play_to_eof_event_order(scene: Scene):
 
 
 async def test_body_held_until_cont(scene: Scene):
-    dev, srv = await rig(scene)
+    _dev, srv = await rig(scene)
     url = await track_url(scene, 1, 2.0)
     srv.awaiting_stmc = True
     srv.play(url)
@@ -93,11 +93,14 @@ async def test_body_held_until_cont(scene: Scene):
     hold = tl.first(kind="event", name="hold")
     release = tl.first(kind="event", name="release")
     cont = tl.first(kind="cmd", name="cont")
-    assert hold and release and cont and hold.t <= cont.t <= release.t
+    assert hold
+    assert release
+    assert cont
+    assert hold.t <= cont.t <= release.t
 
 
 async def test_no_autostart_waits_for_unpause(scene: Scene):
-    dev, srv = await rig(scene)
+    _dev, srv = await rig(scene)
     url = await track_url(scene, 1, 2.0)
     srv.play(url, autostart=False)
     await srv.wait("STMl")
@@ -155,7 +158,7 @@ async def test_mute_stops_output_and_unmute_does_not_resume(scene: Scene):
 
 
 async def test_gapless_enqueue(scene: Scene):
-    dev, srv = await rig(scene)
+    _dev, srv = await rig(scene)
     a = await track_url(scene, 1, 2.0)
     b = await track_url(scene, 2, 2.0)
     srv.play(a)
@@ -176,18 +179,20 @@ async def test_discovery_tlv_and_legacy(scene: Scene):
         assert reply["NAME"] == "Seamer Test Server"
         assert reply["IPAD"] == "192.0.2.10"
         assert addr[1] == port
-        assert disc.requests[0][:1] == b"e" and b"IPAD" in disc.requests[0]
+        assert disc.requests[0][:1] == b"e"
+        assert b"IPAD" in disc.requests[0]
         reply, _ = await dev.discover("127.0.0.1", port, legacy=True)
         assert reply == {"IPAD": "192.0.2.10"}
         legacy = disc.requests[1]
-        assert len(legacy) == 18 and legacy[2] == dev.device_id
+        assert len(legacy) == 18
+        assert legacy[2] == dev.device_id
     finally:
         assert disc.transport is not None
         disc.transport.close()
 
 
 async def test_reconnect_sets_flag(scene: Scene):
-    dev, srv = await rig(scene, reconnect_delay_s=0.1)
+    _dev, srv = await rig(scene, reconnect_delay_s=0.1)
     assert srv._writer is not None
     srv._writer.close()
     await srv.wait("HELO", n=2)
@@ -208,3 +213,12 @@ async def test_flush_and_stop(scene: Scene):
     srv.strm("f")  # nothing left to flush: no STMf
     await asyncio.sleep(0.2)
     assert srv.count("STMf") == n + 1
+
+
+async def test_helo_lists_codecs_plainly(scene: Scene):
+    _dev, srv = await rig(scene)
+    caps = srv.helos[0][36:].decode()
+    assert "[" not in caps, caps
+    assert ",flc," in caps, caps
+    assert caps.endswith(",mp3"), caps
+    assert ",AccuratePlayPoints=1," in caps

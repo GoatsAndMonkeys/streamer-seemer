@@ -78,10 +78,23 @@ class FakeSlimServer:
     def last_stat(self, name: str = "STMt") -> dict[str, int]:
         payload = [p for op, p in self.frames if op == name][-1]
         f = P.STAT_STRUCT.unpack(payload[4:51])
-        keys = (
-            "num_crlf mas_init mas_mode buf_size buf_full rx_h rx_l signal jiffies "
-            "out_size out_full elapsed_s voltage elapsed_ms server_ts"
-        ).split()
+        keys = [
+            "num_crlf",
+            "mas_init",
+            "mas_mode",
+            "buf_size",
+            "buf_full",
+            "rx_h",
+            "rx_l",
+            "signal",
+            "jiffies",
+            "out_size",
+            "out_full",
+            "elapsed_s",
+            "voltage",
+            "elapsed_ms",
+            "server_ts",
+        ]
         return dict(zip(keys, f, strict=True))
 
     # -- commands (aioslimproto-style) -----------------------------------------------

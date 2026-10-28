@@ -21,6 +21,7 @@ Truth (what is heard) is the TransportMachine + HttpSink as in every family.
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import contextlib
 import ipaddress
@@ -60,6 +61,17 @@ class Stream:
     paused_at: float | None = None
     paused_ms: float = 0.0
     timers: list[Any] = field(default_factory=list)
+
+
+def _as_list(value: Any) -> list[str]:
+    """A profile list; identity values may arrive stringified ("['a', 'b']" or "a,b")."""
+    if isinstance(value, (list, tuple)):
+        return [str(v) for v in value]
+    text = str(value).strip()
+    if text.startswith("["):
+        with contextlib.suppress(ValueError, SyntaxError):
+            return [str(v) for v in ast.literal_eval(text)]
+    return [p.strip() for p in text.split(",") if p.strip()]
 
 
 class SqueezeliteDevice(SimDevice):
@@ -222,12 +234,12 @@ class SqueezeliteDevice(SimDevice):
             f"Model={ident.get('model', 'squeezelite')}",
             f"ModelName={ident.get('model_name', 'SqueezeLite')}",
         ]
-        parts += [str(c) for c in ident.get("caps", [])]
+        parts += _as_list(ident.get("caps", []))
         parts.append(f"Firmware={ident.get('firmware', 'v2.0.0-1488')}")
         parts.append(f"MaxSampleRate={ident.get('max_sample_rate', 192000)}")
         if self.knobs.get("can_https"):
             parts.append("CanHTTPS=1")
-        parts += [str(c) for c in ident.get("codecs", ["flc", "pcm", "mp3"])]
+        parts += _as_list(ident.get("codecs", ["flc", "pcm", "mp3"]))
         return ",".join(parts)
 
     # -- connection ----------------------------------------------------------------
@@ -724,11 +736,10 @@ class SqueezeliteDevice(SimDevice):
             if self.next_stream is not None and self.next_stream.url == data.get("uri"):
                 self._cancel_timers()
                 self.stream, self.next_stream = self.next_stream, None
-        elif name == "track_ended":
-            if self.next_stream is None and self.stream is not None:
-                self._cancel_timers()
-                self.stream = None
-                self.send_stat("STMu")
+        elif name == "track_ended" and self.next_stream is None and self.stream is not None:
+            self._cancel_timers()
+            self.stream = None
+            self.send_stat("STMu")
 
     # -- background ----------------------------------------------------------------
 
@@ -753,8 +764,13 @@ class SqueezeliteDevice(SimDevice):
                 and not st.stml_sent
                 and not st.silent
                 and self.sink is not None
-                and (st.eof or self.sink.bytes_read >= st.strm.threshold_kb * 1024)
                 and st.resp is not None
+                and (
+                    st.eof
+                    or self.sink.buffer.full  # the stream buffer cannot take more
+                    or self.sink.bytes_read
+                    >= min(st.strm.threshold_kb, self.knobs.get("stream_buffer_kb")) * 1024
+                )
             ):
                 st.stml_sent = True
                 self.send_stat("STMl")
