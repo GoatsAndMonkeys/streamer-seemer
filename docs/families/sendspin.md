@@ -163,3 +163,21 @@ another profile, set `SEAMER_PROFILE=sendspin/<name>`.
 | `bug6888` (python-cli, goodbye `shutdown`) | **fails, which reproduces #6888.** The `restart` control is re-dialed. After `shutdown`, MA never dials again; aiosendspin logs `Not reconnecting to … (goodbye reason: shutdown)`. |
 | `bug6888_user_request` | **fails**, by the same mechanism: only `restart` keeps the reconnect loop alive. |
 | `bug6887` (goodbye `another_server`) | **passes on dev**, for S3 G2, esphome_legacy G0 and voice_pe G0 alike. The player stays listed and available, and play reclaims the device (a new session, and chunks play). Dev's held-elsewhere handling and aiosendspin's retention of `ANOTHER_SERVER` clients seem to fix the 2.10.8 symptom. The test stays as a regression guard. |
+
+### Bug hunt (`tests/e2e/hunt/`)
+
+Seventeen scenarios, each run 3 times against MA dev cdff463ec (aiosendspin 10.2.1):
+
+    MA_REPO=/path/to/ma-dev .venv/bin/python tests/e2e/hunt/run_hunt.py --repeat 3 -j 4 --out /tmp/hunt
+
+`test_hunt.py` runs the same set under pytest when `MA_REPO` is set. Bugs that reproduce
+are strict xfails, so a fix in MA shows up as an XPASS.
+
+| Reproduced 3/3 | What fails |
+|---|---|
+| `ss26_shutdown_manual_ip` (#6888) | A manual-IP device that sends goodbye `shutdown` is never dialed again. Over mDNS (Added or Updated) it is re-dialed in 0.3 s. |
+| `ss36_available_never` (SS36) | A player that reports `available:false` shows as available and "playing" in MA, while aiosendspin correctly sends it no audio. |
+| `ss56_offline_redial_gap` (SS56) | A manual-IP device that is gone for 130 s waits about 125 s more after it returns, because of exponential backoff (cap 300 s). |
+
+The other fourteen pass. They stay as regression guards: SS24, SS27, SS28, SS29, SS30,
+SS35, SS44, SS48, SS53, SS55, SS5, MA restart, and the two mDNS variants of SS26.
