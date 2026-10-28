@@ -67,15 +67,42 @@ async def test_drain_vs_drop_on_server_close(media, media_srv, mode, played):
     await sink.aclose()
 
 
+async def wait_settled(read, quiet_s=0.3, timeout=10.0):
+    """Wait (real time) until ``read()`` stops changing for ``quiet_s``."""
+    t0 = time.monotonic()
+    last, since = read(), time.monotonic()
+    while time.monotonic() - since < quiet_s:
+        assert time.monotonic() - t0 < timeout, "never settled"
+        await asyncio.sleep(0.02)
+        if (now := read()) != last:
+            last, since = now, time.monotonic()
+    return last
+
+
 async def test_backpressure_limits_what_the_server_sends(media, media_srv):
+    # Virtual clock: the player only drains when we advance it, so how much the sink
+    # reads depends on the buffer, not on how fast this machine happens to be.
     ms, base = media_srv
-    t = media.track(3, 30.0)
-    sink, _rec = make_sink(buffer_capacity_s=1.0)
+    # Longer than any loopback socket buffering (macOS autotunes to 4+4 MiB, Linux
+    # to ~6+4 MiB): if the server finishes, the sink did not push back.
+    t = media.track(3, 90.0)
+    clock = VirtualClock()
+    sink, _rec = make_sink(clock, buffer_capacity_s=1.0)
     await sink.open(f"{base}/stream/{t.name}?rate=0")
-    await asyncio.sleep(1.0)
-    sent_s = ms.sent[-1]["bytes"] / BPS
-    assert sink.buffer.fill_s <= 1.0 + 0.2
-    assert sent_s < 15, f"server pushed {sent_s:.1f}s of audio despite a 1s buffer"
+    await wait_real(lambda: sink.buffer.full)
+    # the reader stops once the buffer is full ...
+    read_s = await wait_settled(lambda: sink.buffer.received_s)
+    assert sink.buffer.played_s == 0
+    assert read_s <= 1.0 + 0.2
+    # ... and the server, blocked on TCP, stops sending well before the end.
+    sent = await wait_settled(lambda: ms.sent[-1]["bytes"])
+    assert not ms.sent[-1]["done"]
+    assert sent / BPS < 60, f"server pushed {sent / BPS:.1f}s of audio despite a 1s buffer"
+    # Playing 1s frees 1s of room; the reader takes about that much and stops again.
+    await clock.advance(1.0)
+    await wait_real(lambda: sink.buffer.full)
+    more_s = await wait_settled(lambda: sink.buffer.received_s) - read_s
+    assert 0.5 <= more_s <= 1.25
     await sink.close("test")
     await sink.aclose()
 
