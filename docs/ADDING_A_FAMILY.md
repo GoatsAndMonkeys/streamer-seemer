@@ -38,12 +38,12 @@ from .. import Family
 from .device import LinkplayDevice
 
 FAMILY = Family(
-    name="linkplay",                   # registry + CLI name; must equal device_cls.family
+    name="linkplay",  # registry + CLI name; must equal device_cls.family
     device_cls=LinkplayDevice,
     profiles_dir=Path(__file__).parent / "profiles",
     description="WiiM / LinkPlay (httpapi.asp + UPnP)",
-    default_profile="wiim_pro",        # used when no --profile is given
-    default_port=0,                    # suggested port for `seamer run` (0 = free port)
+    default_profile="wiim_pro",  # used when no --profile is given
+    default_port=0,  # suggested port for `seamer run` (0 = free port)
 )
 ```
 
@@ -58,13 +58,27 @@ Declare every quirk as a knob in `knobs.py`, at import time:
 
 ```python
 from ...simkit.knobs import knob
+
 FAMILY = "linkplay"
 
-knob("status_position_zero_on_stream", family=FAMILY, type="bool", default=False,
-     quirks=("LP-07",), confidence="high",
-     doc="getPlayerStatusEx reports curpos=0 for HTTP streams.")
-knob("ignore_seek", family=FAMILY, type="prob", default=False, quirks=("LP-12",),
-     confidence="low", doc="Seek is acknowledged but not applied.")
+knob(
+    "status_position_zero_on_stream",
+    family=FAMILY,
+    type="bool",
+    default=False,
+    quirks=("LP-07",),
+    confidence="high",
+    doc="getPlayerStatusEx reports curpos=0 for HTTP streams.",
+)
+knob(
+    "ignore_seek",
+    family=FAMILY,
+    type="prob",
+    default=False,
+    quirks=("LP-12",),
+    confidence="low",
+    doc="Seek is acknowledged but not applied.",
+)
 ```
 
 - **type**: `bool`, `int`, `float`, `str`, `enum` (needs `choices`), `prob`, `dict`.
@@ -135,32 +149,35 @@ from ...simkit.device import SimDevice
 from ...simkit.transport import ReportLens, TState
 from . import knobs as _knobs  # noqa: F401  (registers knobs)
 
+
 class LinkplayLens(ReportLens):
-    def status_ex(self) -> dict: ...         # truth -> protocol vocabulary, via self.position(),
-                                             # self.duration(), self.state(), self.metadata()
+    # truth -> protocol vocabulary, via self.position(), self.duration(),
+    # self.state(), self.metadata()
+    def status_ex(self) -> dict: ...
+
 
 class LinkplayDevice(SimDevice):
     family = "linkplay"
     lens_cls = LinkplayLens
-    use_sink = True                          # False if the device never fetches audio
+    use_sink = True  # False if the device never fetches audio
 
     def build_app(self) -> web.Application:  # REQUIRED: the main protocol port
-        app = self.make_app()                # includes recording + HTTP fault middleware
+        app = self.make_app()  # includes recording + HTTP fault middleware
         app.router.add_get("/httpapi.asp", self._httpapi)
         return app
 
-    async def on_start(self) -> None:        # optional: extra ports, SSDP, mDNS
+    async def on_start(self) -> None:  # optional: extra ports, SSDP, mDNS
         self.upnp = await self.serve(self._upnp_app(), port=0)
 
-    async def on_stop(self) -> None: ...     # optional
+    async def on_stop(self) -> None: ...  # optional
 
-    def status(self) -> dict: ...            # optional: extra data for GET /_sim/state
+    def status(self) -> dict: ...  # optional: extra data for GET /_sim/state
 
     async def sim_action(self, name, payload):  # optional: POST /_sim/action/<name>
         if name == "press_preset":
             ...
             return "ok"
-        raise KeyError(name)                 # -> 404
+        raise KeyError(name)  # -> 404
 ```
 
 What the base class gives you (all set up in `SimDevice.__init__`, before `build_app`):
@@ -198,7 +215,7 @@ await tm.play()
 await tm.pause()
 await tm.stop()
 await tm.seek(s)
-await tm.next()                       # -> bool
+await tm.next()  # -> bool
 tm.take_over(owner, emit_event=..., title=...)
 ```
 
