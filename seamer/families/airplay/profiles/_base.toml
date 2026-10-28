@@ -1,0 +1,18 @@
+# Shared base for AirPlay profiles. Files starting with "_" are not listed.
+# Addresses are RFC 5737 documentation addresses; MACs are locally administered fakes.
+[identity]
+ip = "192.0.2.40"
+mac = "02:00:5E:00:00:40"
+deviceid = "02:00:5E:00:00:40"
+features = "0x445F8A00,0x1C340"
+flags = "0x4"
+srcvers = "366.0"
+volume = "30"
+pk = "0000000000000000000000000000000000000000000000000000000000000040"
+audio_formats_extended = [18, 19]
+
+[surfaces]
+list = ["airplay_wire", "airplay_info", "dacp_client", "mdns"]
+
+[knobs]
+prebuffer_s = 0.3

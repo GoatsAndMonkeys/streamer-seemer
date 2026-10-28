@@ -1,0 +1,21 @@
+description = "AirPort Express (1st gen): RAOP only, NTP timing, 2 s latency."
+extends = ["_base"]
+
+[identity]
+name = "AirPort Express"
+manufacturer = "Apple Inc."
+model = "AirPort4,107"
+firmware = "6.3"
+srcvers = "105.1"
+features = "0x0"
+et = "0,1"
+ip = "192.0.2.44"
+mac = "02:00:5E:00:00:44"
+deviceid = "02:00:5E:00:00:44"
+audio_formats_extended = []
+
+[knobs]
+airplay2 = false               # cas:P1
+connect_ms = 300
+output_latency_ms = 2000       # ca2:A36
+volume_echo = { enabled = false, delay_ms = 0, burst = 1 }
