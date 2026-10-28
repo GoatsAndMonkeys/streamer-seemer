@@ -1,0 +1,17 @@
+description = "moOde audio player: MPD 0.23 with fixed/CamillaDSP volume and renderer takeovers."
+extends = ["_base"]
+
+[identity]
+name = "moOde"
+manufacturer = "moOde audio"
+model = "moOde audio player"
+firmware = "9.0.1"
+output_name = "ALSA Default"
+
+[knobs]
+version = "0.23.5"
+mixer = "none"                    # MO2: 0dB / CamillaDSP volume, no MPD mixer
+volume_unavailable = "minus_one"  # MO2: moOde patches report volume: -1
+setvol_error = "problems setting volume"
+ownqueue_clears_mpd = true        # MO5: upmpdcli ownqueue=1
+max_connections = 20              # MP3: worker + UI + phone apps share a small pool (low)
