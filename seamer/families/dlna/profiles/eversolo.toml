@@ -1,0 +1,17 @@
+description = "Eversolo DMP-A6 streamer: well behaved over UPnP; Play answers once audio starts."
+extends = ["_base"]
+
+[identity]
+name = "Eversolo DMP-A6"
+manufacturer = "Eversolo"
+manufacturer_url = "https://www.eversolo.com/"
+model = "DMP-A6"
+model_number = "DMP-A6"
+model_description = "Eversolo Music Streamer"
+serial = "EVS0000A6"
+ip = "192.0.2.23"
+mac = "02:00:5E:00:00:23"
+
+[knobs]
+play_blocks_until_audio_s = 10.0   # dsh:3/DL-05 (low confidence for this model)
+openhome = true

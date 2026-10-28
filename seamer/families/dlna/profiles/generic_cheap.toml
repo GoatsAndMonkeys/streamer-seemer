@@ -1,0 +1,19 @@
+description = "Generic cheap renderer (no-name amp/speaker firmware): stale actions, sloppy replies."
+extends = ["_base"]
+
+[identity]
+name = "Smart Speaker"
+manufacturer = "Generic"
+model = "DMR-100"
+model_number = "1.0"
+serial = "000000000001"
+ip = "192.0.2.25"
+mac = "02:00:5E:00:00:25"
+
+[knobs]
+transport_actions = "stale"        # dsh:1, DL-06, MA#6425
+stop_when_idle_701 = true          # dsh:4
+set_next = "ignored"               # dsh:10
+didl_malformed = true              # dsh:22
+no_rc_events = true                # ma:dlna#3474
+abs_time_not_implemented = true    # dsh:16

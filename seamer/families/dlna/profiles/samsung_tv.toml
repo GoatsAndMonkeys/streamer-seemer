@@ -1,0 +1,22 @@
+description = "Samsung TV DMR: HEAD before SetAVTransportURI, strict MIME list, new SID on renew."
+extends = ["_base"]
+
+[identity]
+name = "[TV] Samsung Q80 Series (55)"
+manufacturer = "Samsung Electronics"
+manufacturer_url = "http://www.samsung.com/sec"
+model = "QE55Q80TA"
+model_number = "AllShare1.0"
+model_description = "Samsung TV DMR"
+serial = "0AB1CDEF00000X"
+ip = "192.0.2.24"
+mac = "02:00:5E:00:00:24"
+volume = "12"
+
+[knobs]
+head_check_on_set_uri = true       # DL-07
+protocolinfo_filter = true         # dsh:25, DL-08
+new_sid_on_renew = true            # dsh:43, DL-04
+range_rerequest_after_bytes = 262144   # X5 (low confidence)
+set_next = "playing_only"          # dsh:11
+stop_when_idle_701 = true          # dsh:4

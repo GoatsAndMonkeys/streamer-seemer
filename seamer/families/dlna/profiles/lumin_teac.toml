@@ -1,0 +1,22 @@
+description = "LUMIN / TEAC NR-7CD style strict-range streamer: needs 206 or plays silence (#6775)."
+extends = ["_base"]
+
+[identity]
+name = "TEAC NR-7CD"
+manufacturer = "TEAC"
+manufacturer_url = "http://www.teac.com/"
+model = "NR-7CD"
+model_number = "NR-7CD"
+model_description = "Network CD Player"
+serial = "0000000000NR7"
+ip = "192.0.2.22"
+mac = "02:00:5E:00:00:22"
+
+[surfaces]
+list = ["upnp_avt", "upnp_rc", "upnp_cm", "gena", "ssdp", "openhome"]
+
+[knobs]
+range_required = "silent"     # dsh:28, MA#6775: PLAYING with RelTime counting, no audio
+require_range = true          # the sink itself also sends Range: bytes=0- and wants 206
+openhome = true               # Info.Details shows CodecName="" while faking
+play_blocks_until_audio_s = 0.0
