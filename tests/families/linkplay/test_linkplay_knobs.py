@@ -142,6 +142,48 @@ async def test_artwork_sentinel(scene: Scene):
     assert meta["albumArtURI"] == "un_known"
 
 
+async def test_artwork_echoes_ma_didl_and_sentinel_for_sources(scene: Scene):
+    dev = await scene.device("linkplay/wiim_pro", **FAST)
+    async with Client(dev) as c:
+        await scene.media_server()
+        url = scene.media_url(scene.media.track(1, 4.0).path)
+        meta = didl("One", "0:00:04.000", url).replace(
+            "</dc:title>", "</dc:title><upnp:albumArtURI>http://192.0.2.1/a.jpg</upnp:albumArtURI>"
+        )
+        await c.avt("SetAVTransportURI", CurrentURI=url, CurrentURIMetaData=meta)
+        await c.avt("Play", Speed="1")
+        got = (await c.avt("GetPositionInfo"))["TrackMetaData"]
+        assert "<upnp:albumArtURI>http://192.0.2.1/a.jpg</upnp:albumArtURI>" in got
+        await dev.sim_action("switch_source", {"source": "tidal", "title": "Radio"})
+        got = (await c.avt("GetPositionInfo"))["TrackMetaData"]
+        assert "<upnp:albumArtURI>unknow</upnp:albumArtURI>" in got  # lq:Q13
+        await dev.sim_action("switch_source", {"source": "tidal", "art": "http://192.0.2.1/b"})
+        got = (await c.avt("GetPositionInfo"))["TrackMetaData"]
+        assert "<upnp:albumArtURI>http://192.0.2.1/b</upnp:albumArtURI>" in got
+
+
+async def test_self_hosted_art(scene: Scene):
+    dev = await scene.device("linkplay/wiim_pro", self_hosted_art=True)
+    async with Client(dev) as c:
+        await dev.switch_source("airplay")
+        got = (await c.avt("GetPositionInfo"))["TrackMetaData"]
+        art = f"{dev.api_urls['https']}{proto.AIRPLAY_ART_PATH}"
+        assert f"<upnp:albumArtURI>{art}</upnp:albumArtURI>" in got
+        assert (await c.cmdj("getMetaInfo"))["metaData"]["albumArtURI"] == art
+        async with c.session.get(art, ssl=c.ssl) as r:
+            assert r.status == 200
+            assert not r.headers.get("Content-Type")  # aiohttp sends it empty
+            assert (await r.read())[:2] == b"\xff\xd8"
+        with pytest.raises(aiohttp.ClientConnectorCertificateError):
+            async with c.session.get(art):  # verifying client: self-signed (L58)
+                pass
+    dev2 = await scene.device("linkplay/wiim_pro")
+    async with Client(dev2) as c:
+        await dev2.switch_source("airplay")
+        got = (await c.avt("GetPositionInfo"))["TrackMetaData"]
+        assert "<upnp:albumArtURI>unknow</upnp:albumArtURI>" in got
+
+
 async def test_duplicate_vendor_key(scene: Scene):
     dev = await scene.device("linkplay/wiim_pro", duplicate_vendor_key=True)
     async with Client(dev) as c:

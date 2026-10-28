@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import re
 import xml.etree.ElementTree as ET
 from html import escape
@@ -100,6 +101,23 @@ def full32(compact: str) -> str:
     return (compact + compact[:8]).upper()
 
 
+# L58: where the device hosts the AirPlay cover, and a small JPEG to serve there
+AIRPLAY_ART_PATH = "/data/AirplayArtWorkData.jpeg"
+TINY_JPEG = base64.b64decode(
+    "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdA"
+    "SFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2Nj"
+    "Y2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAIAAgDASIAAhEBAxEB/8QA"
+    "HwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIh"
+    "MUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVW"
+    "V1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXG"
+    "x8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQF"
+    "BgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAV"
+    "YnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOE"
+    "hYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq"
+    "8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDLoooriPpj/9k="
+)
+
+
 def didl_title(meta: str) -> tuple[str | None, str | None, str | None]:
     """(title, artist, album) from a DIDL-Lite string, or Nones."""
     if not meta:
@@ -136,3 +154,17 @@ def didl(
         f'<res protocolInfo="http-get:*:audio/*:*" duration="{dur}">{escape(uri)}</res>'
         "</item></DIDL-Lite>"
     )
+
+
+def didl_art(meta: str) -> str | None:
+    """upnp:albumArtURI from a DIDL-Lite string, or None."""
+    if not meta:
+        return None
+    try:
+        root = ET.fromstring(meta)
+    except ET.ParseError:
+        return None
+    for el in root.iter():
+        if el.tag.split("}")[-1] == "albumArtURI" and el.text:
+            return el.text.strip() or None
+    return None
