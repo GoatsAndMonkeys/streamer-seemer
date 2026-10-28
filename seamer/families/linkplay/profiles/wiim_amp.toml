@@ -1,0 +1,24 @@
+description = "WiiM Amp: HDMI ARC input; HTTP volume changes are not evented (L64)."
+extends = ["_base"]
+
+[identity]
+name = "WiiM Amp"
+manufacturer = "Linkplay"
+manufacturer_url = "https://www.wiimhome.com"
+model = "WiiM Amp"
+model_number = "WiiM_Amp_4layer"
+project = "WiiM_Amp_4layer"
+hardware = "A98"
+firmware = "Linkplay.4.8.731953"
+release = "20260815"
+uuid = "FF98F3591A5020113B0A3918"
+serial = "000000000002"
+ip = "192.0.2.23"
+mac = "02:00:5E:00:00:23"
+inputs = "wifi,bluetooth,line-in,optical,hdmi"
+outputs = "Speaker Out:AUDIO_OUTPUT_SPEAKER_MODE,Sub Out:AUDIO_OUTPUT_AUX_MODE"
+
+[knobs]
+load_delay_s = 0.4
+echo_http_volume_events = false    # L64
+input_switch_without_upnp_event = true   # lq:Q24 / MA#6897 (TV turns on -> HDMI)

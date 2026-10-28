@@ -1,0 +1,17 @@
+# Shared base for LinkPlay profiles. Files starting with "_" are not listed.
+# Addresses are RFC 5737 documentation addresses; MACs are locally administered fakes.
+[identity]
+manufacturer = "Linkplay Technology Inc."
+manufacturer_url = "http://www.linkplay.com"
+model_description = "WiFi Audio"
+ip = "192.0.2.10"
+mac = "02:00:5E:00:00:10"
+volume = "30"
+inputs = "wifi,bluetooth"
+outputs = "Line Out:AUDIO_OUTPUT_AUX_MODE,Optical Out:AUDIO_OUTPUT_SPDIF_MODE"
+
+[surfaces]
+list = ["linkplay_http", "upnp_avt", "upnp_rc", "upnp_pq", "gena"]
+
+[knobs]
+load_delay_s = 0.3          # TRANSITIONING before audio (lq:Q15)

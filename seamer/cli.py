@@ -42,7 +42,8 @@ def parse_knob(arg: str) -> tuple[str, Any]:
 
 def _cmd_families(_args: argparse.Namespace) -> int:
     for name, fam in sorted(discover().items()):
-        print(f"{name:<12} {fam.description}  (default profile: {fam.default_profile})")
+        alias = f" [alias: {', '.join(fam.aliases)}]" if fam.aliases else ""
+        print(f"{name:<12} {fam.description}  (default profile: {fam.default_profile}){alias}")
     for mod, err in errors().items():
         print(f"! {mod}: failed to import: {err}", file=sys.stderr)
     return 0

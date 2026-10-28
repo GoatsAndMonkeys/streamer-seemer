@@ -103,7 +103,7 @@ class _SsdpProtocol(asyncio.DatagramProtocol):
             return
         st = headers.get("ST", "")
         if self.owner.rec is not None:
-            self.owner.rec.cmd("ssdp_msearch", st=st, src=f"{addr[0]}:{addr[1]}")
+            self.owner.rec.cmd("ssdp_msearch", st=st, peer=f"{addr[0]}:{addr[1]}")
         for target in self.owner.targets:
             for rst, usn in target.replies(st):
                 assert self.transport is not None

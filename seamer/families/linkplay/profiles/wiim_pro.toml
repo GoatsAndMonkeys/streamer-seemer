@@ -1,0 +1,21 @@
+description = "WiiM Pro (A98, firmware 4.8): HTTPS-only API, PlayQueue, full GENA."
+extends = ["_base"]
+
+[identity]
+name = "WiiM Pro"
+manufacturer = "Linkplay"
+manufacturer_url = "https://www.wiimhome.com"
+model = "WiiM Pro"
+model_number = "WiiM_Pro_with_gc4a"
+project = "WiiM_Pro_with_gc4a"
+hardware = "A98"
+firmware = "Linkplay.4.8.731953"
+release = "20260815"
+uuid = "FF98F09C1A5020113B0A3918"
+serial = "000000000000"
+ip = "192.0.2.21"
+mac = "02:00:5E:00:00:21"
+inputs = "wifi,bluetooth,line-in,optical"
+
+[knobs]
+load_delay_s = 0.4
