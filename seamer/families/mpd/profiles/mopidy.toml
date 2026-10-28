@@ -1,0 +1,21 @@
+description = "Mopidy 3 with Mopidy-MPD: protocol 0.19 dialect, GStreamer HTTP client."
+extends = ["_base"]
+
+[identity]
+name = "Mopidy"
+manufacturer = "Mopidy"
+model = "Mopidy-MPD"
+firmware = "3.4.2"
+output_name = "Mute"
+output_plugin = "mopidy"
+user_agent = "Mopidy/3.4.2 GStreamer souphttpsrc libsoup/2.72.0"
+
+[knobs]
+version = "0.19.0"                 # MPY2
+status_dialect = "mopidy"          # MPY2
+volume_unavailable = "minus_one"
+max_connections = 20               # Mopidy-MPD max_connections default
+connection_timeout_s = 60.0
+unsupported_commands = "getvol,readpicture,albumart,binarylimit"  # MP11
+add_probe_get = true               # MPY1: stream lookup fetches the URL at add time
+codec_probe_fail = ""              # GStreamer typefinds FLAC fine

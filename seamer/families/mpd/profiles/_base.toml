@@ -1,0 +1,16 @@
+# Shared base for MPD profiles. Files starting with "_" are not listed.
+[identity]
+manufacturer = "Music Player Daemon"
+model = "MPD"
+output_name = "ALSA Default"
+output_plugin = "alsa"
+user_agent = "Music Player Daemon {version}"
+initial_volume = 50
+
+[surfaces]
+list = ["mpd_tcp"]
+
+[knobs]
+# MP7: MPD's curl input buffers ahead; MPD's audio_buffer_size default is ~4 MiB
+buffer_capacity_s = 20.0
+prebuffer_s = 0.5

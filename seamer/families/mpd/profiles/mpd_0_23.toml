@@ -1,0 +1,9 @@
+description = "Stock MPD 0.23 (Debian 12 / Raspberry Pi OS): software mixer, no password."
+extends = ["_base"]
+
+[identity]
+name = "MPD 0.23"
+firmware = "0.23.12"
+
+[knobs]
+version = "0.23.5"     # protocol version MPD 0.23.12 announces

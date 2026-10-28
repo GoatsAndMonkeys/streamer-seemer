@@ -1,0 +1,13 @@
+description = "Volumio-style MPD 0.21: statemachine runs consume mode, software mixer."
+extends = ["_base"]
+
+[identity]
+name = "Volumio"
+manufacturer = "Volumio"
+model = "Volumio"
+firmware = "3.569"
+
+[knobs]
+version = "0.21.25"    # VO: Volumio 3 ships MPD 0.21 (low confidence on the patch level)
+initial_consume = true # VO6
+mixer = "software"     # VO8

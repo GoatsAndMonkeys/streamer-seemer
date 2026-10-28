@@ -1,0 +1,9 @@
+description = "MPD 0.24: consume/single oneshot, `Added:` tag in song info."
+extends = ["_base"]
+
+[identity]
+name = "MPD 0.24"
+firmware = "0.24.2"
+
+[knobs]
+version = "0.24.0"
