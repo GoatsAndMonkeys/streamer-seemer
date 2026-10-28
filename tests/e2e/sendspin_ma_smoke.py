@@ -11,7 +11,8 @@ interpreter and ``PYTHONPATH=$MA_REPO:<this repo>``:
   tone track into the fake sink. Then pause, seek, volume, each read back on both sides.
 - ``bug6888``: python-cli restarts with goodbye ``shutdown`` (Ctrl-C / systemd stop).
   MA should dial it again once it is back. Control: the same with ``restart``.
-  ``bug6888_user_request`` is the same with goodbye ``user_request``.
+  ``bug6888_user_request`` is the same with goodbye ``user_request``; per the spec the
+  server should NOT redial then (the user asked to disconnect), so it is a guard.
 - ``bug6887``: the device says goodbye ``another_server``. The player should stay
   listed, not disappear until the provider is reloaded. On MA dev (cdff463ec) this
   passes (held-elsewhere handling plus aiosendspin's reclaim), so it is a regression guard.
@@ -108,12 +109,12 @@ if "pytest" in sys.modules:
             r,
         )
 
-    def test_bug_6888_redial_after_user_request_goodbye():
-        # same mechanism: only a "restart" goodbye keeps MA's reconnect loop alive
+    def test_no_redial_after_user_request_goodbye():
+        # spec: the server should not reconnect after a 'user_request' goodbye
         r = _run_scenario("bug6888_user_request")
         assert r["control_restart"]["redialed"], r
-        assert r["user_request"]["redialed"], (
-            "MA did not dial the device again after a 'user_request' goodbye (#6888)",
+        assert not r["user_request"]["redialed"], (
+            "MA dialed the device again after a 'user_request' goodbye",
             r,
         )
 
